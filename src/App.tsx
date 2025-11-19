@@ -98,6 +98,50 @@ function App() {
     }
   };
 
+  const deleteNote = (taskId: string, noteId: string) => {
+    setTasks(tasks.map(task => {
+      if (task.id === taskId) {
+        return {
+          ...task,
+          notes: task.notes.filter(n => n.id !== noteId)
+        };
+      }
+      return task;
+    }));
+
+    if (selectedTask?.id === taskId) {
+      setSelectedTask(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          notes: prev.notes.filter(n => n.id !== noteId)
+        };
+      });
+    }
+  };
+
+  const updateNote = (taskId: string, noteId: string, content: string) => {
+    setTasks(tasks.map(task => {
+      if (task.id === taskId) {
+        return {
+          ...task,
+          notes: task.notes.map(n => n.id === noteId ? { ...n, content } : n)
+        };
+      }
+      return task;
+    }));
+
+    if (selectedTask?.id === taskId) {
+      setSelectedTask(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          notes: prev.notes.map(n => n.id === noteId ? { ...n, content } : n)
+        };
+      });
+    }
+  };
+
   // Filter tasks for "Today" view (Center)
   const todayTasks = tasks.filter(task => isSameDay(new Date(task.createdAt), new Date()));
   const activeTasksCount = todayTasks.filter(t => !t.completed).length;
@@ -160,6 +204,8 @@ function App() {
           onClose={() => setSelectedTask(null)}
           onAddNote={addNoteToTask}
           onUpdateTitle={updateTaskTitle}
+          onDeleteNote={deleteNote}
+          onUpdateNote={updateNote}
         />
       )}
     </div>

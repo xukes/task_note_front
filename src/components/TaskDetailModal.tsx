@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Task, Note } from '../types';
-import { X, Send, Clock } from 'lucide-react';
+import { X, Send, Clock, Pencil, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 
@@ -9,12 +9,23 @@ interface TaskDetailModalProps {
   onClose: () => void;
   onAddNote: (taskId: string, content: string) => void;
   onUpdateTitle: (taskId: string, title: string) => void;
+  onDeleteNote: (taskId: string, noteId: string) => void;
+  onUpdateNote: (taskId: string, noteId: string, content: string) => void;
 }
 
-export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ task, onClose, onAddNote, onUpdateTitle }) => {
+export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ 
+  task, 
+  onClose, 
+  onAddNote, 
+  onUpdateTitle,
+  onDeleteNote,
+  onUpdateNote
+}) => {
   const [newNote, setNewNote] = useState('');
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [title, setTitle] = useState(task.title);
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [editNoteContent, setEditNoteContent] = useState('');
 
   const handleAddNote = (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,6 +40,23 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ task, onClose,
       onUpdateTitle(task.id, title.trim());
     }
     setIsEditingTitle(false);
+  };
+
+  const startEditingNote = (note: Note) => {
+    setEditingNoteId(note.id);
+    setEditNoteContent(note.content);
+  };
+
+  const saveNoteEdit = (noteId: string) => {
+    if (editNoteContent.trim()) {
+      onUpdateNote(task.id, noteId, editNoteContent.trim());
+      setEditingNoteId(null);
+    }
+  };
+
+  const cancelNoteEdit = () => {
+    setEditingNoteId(null);
+    setEditNoteContent('');
   };
 
   return (
@@ -85,11 +113,57 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ task, onClose,
                     <div className="w-2 h-2 rounded-full bg-blue-200 mt-2"></div>
                     <div className="w-0.5 flex-1 bg-gray-100 my-1 group-last:hidden"></div>
                   </div>
-                  <div className="flex-1 bg-gray-50 rounded-xl p-4 border border-gray-100">
-                    <p className="text-gray-800 whitespace-pre-wrap leading-relaxed">{note.content}</p>
-                    <div className="mt-2 text-xs text-gray-400">
-                      {format(note.createdAt, 'yyyy年M月d日 • aa h:mm', { locale: zhCN })}
-                    </div>
+                  <div className="flex-1 bg-gray-50 rounded-xl p-4 border border-gray-100 group/note relative">
+                    {editingNoteId === note.id ? (
+                      <div className="space-y-2">
+                        <textarea
+                          value={editNoteContent}
+                          onChange={(e) => setEditNoteContent(e.target.value)}
+                          className="w-full p-2 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"
+                          rows={3}
+                          autoFocus
+                        />
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={cancelNoteEdit}
+                            className="px-2 py-1 text-xs text-gray-600 hover:bg-gray-100 rounded transition-colors"
+                          >
+                            取消
+                          </button>
+                          <button
+                            onClick={() => saveNoteEdit(note.id)}
+                            className="px-2 py-1 text-xs text-white bg-blue-600 hover:bg-blue-700 rounded transition-colors"
+                          >
+                            保存
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-gray-800 whitespace-pre-wrap leading-relaxed">{note.content}</p>
+                        <div className="mt-2 text-xs text-gray-400 flex justify-between items-center">
+                          <span>{format(note.createdAt, 'yyyy年M月d日 • aa h:mm', { locale: zhCN })}</span>
+                        </div>
+                        
+                        {/* Edit/Delete Actions */}
+                        <div className="absolute top-2 right-2 opacity-0 group-hover/note:opacity-100 transition-opacity flex gap-1 bg-white/80 backdrop-blur-sm rounded-lg p-1">
+                          <button
+                            onClick={() => startEditingNote(note)}
+                            className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                            title="编辑笔记"
+                          >
+                            <Pencil size={14} />
+                          </button>
+                          <button
+                            onClick={() => onDeleteNote(task.id, note.id)}
+                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                            title="删除笔记"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               ))}
