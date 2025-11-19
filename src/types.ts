@@ -11,5 +11,6 @@ export interface Task {
   completed: boolean;
   createdAt: number;
   completedAt?: number;
-  timeSpent?: number; // Time spent in minutes
+  timeSpent?: number; // Time spent value
+  timeUnit?: 'minute' | 'hour' | 'day' | 'week' | 'month'; // Time unit
 }

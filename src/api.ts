@@ -27,6 +27,7 @@ export const api = {
       createdAt: task.created_at, // Already number
       completedAt: task.completed_at, // Already number or null
       timeSpent: task.time_spent, // Map snake_case to camelCase
+      timeUnit: task.time_unit, // Map snake_case to camelCase
       notes: (task.notes || []).map((note: any) => ({
         ...note,
         createdAt: new Date(note.created_at).getTime() // Note still uses time.Time in backend? Let's check.
@@ -44,7 +45,8 @@ export const api = {
         id: task.id,
         title: task.title,
         completed: task.completed,
-        time_spent: task.timeSpent
+        time_spent: task.timeSpent,
+        time_unit: task.timeUnit
       })
     });
     if (!response.ok) throw new Error('Failed to create task');
@@ -54,6 +56,7 @@ export const api = {
       createdAt: data.created_at,
       completedAt: data.completed_at,
       timeSpent: data.time_spent,
+      timeUnit: data.time_unit,
       notes: []
     };
   },
@@ -64,6 +67,10 @@ export const api = {
     if (updates.timeSpent !== undefined) {
       backendUpdates.time_spent = updates.timeSpent;
       delete backendUpdates.timeSpent;
+    }
+    if (updates.timeUnit !== undefined) {
+      backendUpdates.time_unit = updates.timeUnit;
+      delete backendUpdates.timeUnit;
     }
 
     const response = await fetch(`${API_URL}/tasks/${id}`, {
@@ -78,6 +85,7 @@ export const api = {
       createdAt: data.created_at,
       completedAt: data.completed_at,
       timeSpent: data.time_spent,
+      timeUnit: data.time_unit,
       notes: data.notes || []
     };
   },
@@ -94,6 +102,7 @@ export const api = {
       createdAt: data.created_at,
       completedAt: data.completed_at,
       timeSpent: data.time_spent,
+      timeUnit: data.time_unit,
       notes: data.notes || []
     };
   },

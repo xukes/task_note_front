@@ -34,24 +34,28 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   const [editNoteContent, setEditNoteContent] = useState('');
   const [isEditingTime, setIsEditingTime] = useState(false);
   const [timeSpent, setTimeSpent] = useState(task.timeSpent?.toString() || '');
+  const [timeUnit, setTimeUnit] = useState<'minute' | 'hour' | 'day' | 'week' | 'month'>(task.timeUnit || 'minute');
 
   const handleTimeBlur = () => {
-    const minutes = parseInt(timeSpent);
-    if (!isNaN(minutes) && minutes >= 0) {
-      if (minutes !== task.timeSpent) {
-        onUpdateTask(task.id, { timeSpent: minutes });
+    const value = parseFloat(timeSpent);
+    if (!isNaN(value) && value >= 0) {
+      if (value !== task.timeSpent || timeUnit !== task.timeUnit) {
+        onUpdateTask(task.id, { timeSpent: value, timeUnit });
       }
     } else if (timeSpent === '') {
       if (task.timeSpent !== undefined && task.timeSpent !== 0) {
-         onUpdateTask(task.id, { timeSpent: 0 });
+         onUpdateTask(task.id, { timeSpent: 0, timeUnit });
       }
       setTimeSpent('');
     } else {
       // Reset invalid input
       setTimeSpent(task.timeSpent?.toString() || '');
+      setTimeUnit(task.timeUnit || 'minute');
     }
     setIsEditingTime(false);
   };
+
+
 
   const handleAddNote = (e: React.FormEvent) => {
     e.preventDefault();
@@ -170,19 +174,38 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                 <Timer size={14} />
                 <span>耗时: </span>
                 {isEditingTime ? (
-                  <div className="flex items-center">
+                  <div 
+                    className="flex items-center gap-1"
+                    onBlur={(e) => {
+                      // If the new focus target is within this container, do not close edit mode
+                      if (e.currentTarget.contains(e.relatedTarget as Node)) {
+                        return;
+                      }
+                      handleTimeBlur();
+                    }}
+                  >
                     <input
                       type="number"
                       min="0"
+                      step="0.1"
                       value={timeSpent}
                       onChange={(e) => setTimeSpent(e.target.value)}
-                      onBlur={handleTimeBlur}
                       onKeyDown={(e) => e.key === 'Enter' && handleTimeBlur()}
                       autoFocus
                       className="w-16 px-1 py-0.5 text-sm border border-blue-500 rounded focus:outline-none"
                       placeholder="0"
                     />
-                    <span className="ml-1">分钟</span>
+                    <select
+                      value={timeUnit}
+                      onChange={(e) => setTimeUnit(e.target.value as any)}
+                      className="text-sm border border-blue-500 rounded px-1 py-0.5 focus:outline-none bg-white"
+                    >
+                      <option value="minute">分钟</option>
+                      <option value="hour">小时</option>
+                      <option value="day">天</option>
+                      <option value="week">周</option>
+                      <option value="month">月</option>
+                    </select>
                   </div>
                 ) : (
                   <div 
@@ -190,7 +213,15 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                     className="flex items-center cursor-pointer hover:text-blue-600 hover:bg-blue-50 px-1 rounded transition-colors"
                     title="点击修改耗时"
                   >
-                    <span>{task.timeSpent || 0} 分钟</span>
+                    <span>{task.timeSpent || 0} {
+                      {
+                        'minute': '分钟',
+                        'hour': '小时',
+                        'day': '天',
+                        'week': '周',
+                        'month': '月'
+                      }[task.timeUnit || 'minute']
+                    }</span>
                     <Pencil size={12} className="ml-1 opacity-0 group-hover/time:opacity-100 transition-opacity" />
                   </div>
                 )}
