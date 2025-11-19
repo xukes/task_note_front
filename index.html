@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>任务管理器</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📋 任务管理器</h1>
+            <p class="subtitle">管理您的每日任务、实现情况和笔记</p>
+        </header>
+
+        <div class="task-form">
+            <h2>添加新任务</h2>
+            <form id="addTaskForm">
+                <div class="form-group">
+                    <label for="taskTitle">任务标题：</label>
+                    <input type="text" id="taskTitle" required placeholder="输入任务标题">
+                </div>
+                
+                <div class="form-group">
+                    <label for="taskIntro">任务介绍：</label>
+                    <textarea id="taskIntro" required placeholder="描述任务详情"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="taskStatus">实现情况：</label>
+                    <select id="taskStatus">
+                        <option value="未开始">未开始</option>
+                        <option value="进行中">进行中</option>
+                        <option value="已完成">已完成</option>
+                        <option value="已延期">已延期</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="taskNotes">附加笔记：</label>
+                    <textarea id="taskNotes" placeholder="添加任何额外的笔记或备注"></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">添加任务</button>
+            </form>
+        </div>
+
+        <div class="tasks-section">
+            <div class="section-header">
+                <h2>任务列表</h2>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">全部</button>
+                    <button class="filter-btn" data-filter="未开始">未开始</button>
+                    <button class="filter-btn" data-filter="进行中">进行中</button>
+                    <button class="filter-btn" data-filter="已完成">已完成</button>
+                    <button class="filter-btn" data-filter="已延期">已延期</button>
+                </div>
+            </div>
+            <div id="tasksList" class="tasks-list"></div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
