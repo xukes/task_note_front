@@ -8,6 +8,7 @@ import { SidebarTaskList } from './components/SidebarTaskList';
 import { TaskDetailModal } from './components/TaskDetailModal';
 import { LayoutList, LogOut } from 'lucide-react';
 import { isSameDay, startOfMonth, endOfMonth, startOfWeek, endOfWeek } from 'date-fns';
+import { v4 as uuidv4 } from 'uuid';
 import { zhCN } from 'date-fns/locale';
 import { LoginPage } from './components/LoginPage';
 import { RegisterPage } from './components/RegisterPage';
@@ -62,7 +63,7 @@ function App() {
   const addTask = async (title: string, noteContent: string) => {
     try {
       const newTask: Task = {
-        id: crypto.randomUUID(),
+        id: uuidv4(),
         title,
         notes: [],
         completed: false,
@@ -73,7 +74,7 @@ function App() {
       
       if (noteContent) {
         const note: Note = {
-          id: crypto.randomUUID(),
+          id: uuidv4(),
           content: noteContent,
           createdAt: Date.now()
         };
@@ -151,7 +152,7 @@ function App() {
   const addNoteToTask = async (taskId: string, content: string) => {
     try {
       const newNote: Note = {
-        id: crypto.randomUUID(),
+        id: uuidv4(),
         content,
         createdAt: Date.now()
       };

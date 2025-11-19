@@ -25,7 +25,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegisterSuccess, o
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8080/register', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
