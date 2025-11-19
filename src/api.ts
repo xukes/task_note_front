@@ -31,10 +31,25 @@ export const api = {
       taskTime: task.task_time,
       notes: (task.notes || []).map((note: any) => ({
         ...note,
-        createdAt: new Date(note.created_at).getTime() // Note still uses time.Time in backend? Let's check.
-        // Wait, I didn't change Note model. It still uses time.Time.
-        // So I still need conversion for notes.
+        createdAt: new Date(note.created_at).getTime()
       }))
+    }));
+  },
+
+  fetchTaskStats: async (startDate: number, endDate: number): Promise<{ id: string; taskTime: number; completed: boolean }[]> => {
+    const params = new URLSearchParams();
+    params.append('start_date', startDate.toString());
+    params.append('end_date', endDate.toString());
+
+    const response = await fetch(`${API_URL}/tasks/stats?${params.toString()}`, {
+      headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to fetch task stats');
+    const data = await response.json();
+    return data.map((task: any) => ({
+      id: task.id,
+      taskTime: task.task_time,
+      completed: task.completed
     }));
   },
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Task, Note } from './types';
+import { Task, Note, TaskStat } from './types';
 import { AddTaskForm } from './components/AddTaskForm';
 import { TaskList } from './components/TaskList';
 import { DailyStats } from './components/DailyStats';
@@ -7,7 +7,7 @@ import { Calendar } from './components/Calendar';
 import { SidebarTaskList } from './components/SidebarTaskList';
 import { TaskDetailModal } from './components/TaskDetailModal';
 import { LayoutList, LogOut } from 'lucide-react';
-import { isSameDay, startOfMonth, endOfMonth, startOfWeek, endOfWeek } from 'date-fns';
+import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, startOfDay, endOfDay } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
 import { zhCN } from 'date-fns/locale';
 import { LoginPage } from './components/LoginPage';
@@ -19,7 +19,10 @@ function App() {
   const [username, setUsername] = useState<string | null>(localStorage.getItem('username'));
   const [isRegistering, setIsRegistering] = useState(false);
 
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [monthlyStats, setMonthlyStats] = useState<TaskStat[]>([]);
+  const [todayTasks, setTodayTasks] = useState<Task[]>([]);
+  const [selectedDateTasks, setSelectedDateTasks] = useState<Task[]>([]);
+  
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [viewMonth, setViewMonth] = useState(new Date());
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -37,20 +40,21 @@ function App() {
     localStorage.removeItem('username');
     setToken(null);
     setUsername(null);
-    setTasks([]);
+    setMonthlyStats([]);
+    setTodayTasks([]);
+    setSelectedDateTasks([]);
   };
 
+  // Fetch monthly stats for calendar
   useEffect(() => {
     if (token) {
-      // Calculate the range displayed on the calendar
-      // Calendar displays from startOfWeek(startOfMonth) to endOfWeek(endOfMonth)
       const monthStart = startOfMonth(viewMonth);
       const monthEnd = endOfMonth(monthStart);
       const startDate = startOfWeek(monthStart, { locale: zhCN });
       const endDate = endOfWeek(monthEnd, { locale: zhCN });
 
-      api.fetchTasks(startDate.getTime(), endDate.getTime())
-        .then(setTasks)
+      api.fetchTaskStats(startDate.getTime(), endDate.getTime())
+        .then(setMonthlyStats)
         .catch(err => {
           console.error(err);
           if (err.message.includes('401')) {
@@ -60,6 +64,52 @@ function App() {
     }
   }, [token, viewMonth]);
 
+  // Fetch today's tasks on load
+  useEffect(() => {
+    if (token) {
+      const today = new Date();
+      const start = startOfDay(today).getTime();
+      const end = endOfDay(today).getTime();
+      
+      api.fetchTasks(start, end)
+        .then(setTodayTasks)
+        .catch(console.error);
+    }
+  }, [token]);
+
+  // Fetch selected date tasks
+  useEffect(() => {
+    if (token) {
+      const start = startOfDay(selectedDate).getTime();
+      const end = endOfDay(selectedDate).getTime();
+      
+      api.fetchTasks(start, end)
+        .then(setSelectedDateTasks)
+        .catch(console.error);
+    }
+  }, [token, selectedDate]);
+
+  const refreshData = () => {
+    // Refresh all data
+    const monthStart = startOfMonth(viewMonth);
+    const monthEnd = endOfMonth(monthStart);
+    const startDate = startOfWeek(monthStart, { locale: zhCN });
+    const endDate = endOfWeek(monthEnd, { locale: zhCN });
+
+    api.fetchTaskStats(startDate.getTime(), endDate.getTime())
+      .then(setMonthlyStats)
+      .catch(console.error);
+
+    const today = new Date();
+    api.fetchTasks(startOfDay(today).getTime(), endOfDay(today).getTime())
+      .then(setTodayTasks)
+      .catch(console.error);
+
+    api.fetchTasks(startOfDay(selectedDate).getTime(), endOfDay(selectedDate).getTime())
+      .then(setSelectedDateTasks)
+      .catch(console.error);
+  };
+
   const addTask = async (title: string, noteContent: string) => {
     try {
       const newTask: Task = {
@@ -68,9 +118,10 @@ function App() {
         notes: [],
         completed: false,
         createdAt: Date.now(),
+        taskTime: Date.now() // Default to now
       };
       
-      const createdTask = await api.createTask(newTask);
+      await api.createTask(newTask);
       
       if (noteContent) {
         const note: Note = {
@@ -78,11 +129,14 @@ function App() {
           content: noteContent,
           createdAt: Date.now()
         };
-        const createdNote = await api.createNote(createdTask.id, note);
-        createdTask.notes = [createdNote];
+        // We need to wait for task creation to get ID if backend generates it, 
+        // but here we generate UUID on frontend.
+        // However, api.createTask returns the created task.
+        // Let's assume the ID we sent is used.
+        await api.createNote(newTask.id, note);
       }
 
-      setTasks(prev => [createdTask, ...prev]);
+      refreshData();
     } catch (error) {
       console.error('Failed to add task:', error);
       alert('添加任务失败');
@@ -90,19 +144,21 @@ function App() {
   };
 
   const toggleTask = async (id: string) => {
-    const task = tasks.find(t => t.id === id);
-    if (!task) return;
-
     try {
       const updated = await api.toggleTask(id);
-      // Preserve notes as updateTask might not return them fully populated depending on backend
-      // But our api wrapper tries to handle it. 
-      // Let's just update the local state optimistically or with result
-      setTasks(tasks.map(t => t.id === id ? { 
+      
+      // Optimistic update or just refresh
+      // Since we have multiple lists (today, selected date), refreshing is safer but slower.
+      // Let's update local state for responsiveness then refresh stats
+      
+      const updateList = (list: Task[]) => list.map(t => t.id === id ? { 
         ...t, 
         completed: updated.completed,
         completedAt: updated.completedAt 
-      } : t));
+      } : t);
+
+      setTodayTasks(updateList);
+      setSelectedDateTasks(updateList);
       
       if (selectedTask?.id === id) {
         setSelectedTask(prev => prev ? { 
@@ -111,6 +167,15 @@ function App() {
           completedAt: updated.completedAt
         } : null);
       }
+
+      // Refresh stats to update calendar counts
+      const monthStart = startOfMonth(viewMonth);
+      const monthEnd = endOfMonth(monthStart);
+      const startDate = startOfWeek(monthStart, { locale: zhCN });
+      const endDate = endOfWeek(monthEnd, { locale: zhCN });
+      api.fetchTaskStats(startDate.getTime(), endDate.getTime())
+        .then(setMonthlyStats);
+
     } catch (error) {
       console.error('Failed to toggle task:', error);
     }
@@ -119,24 +184,40 @@ function App() {
   const deleteTask = async (id: string) => {
     try {
       await api.deleteTask(id);
-      setTasks(tasks.filter(task => task.id !== id));
+      setTodayTasks(prev => prev.filter(t => t.id !== id));
+      setSelectedDateTasks(prev => prev.filter(t => t.id !== id));
+      
       if (selectedTask?.id === id) {
         setSelectedTask(null);
       }
+      
+      // Refresh stats
+      const monthStart = startOfMonth(viewMonth);
+      const monthEnd = endOfMonth(monthStart);
+      const startDate = startOfWeek(monthStart, { locale: zhCN });
+      const endDate = endOfWeek(monthEnd, { locale: zhCN });
+      api.fetchTaskStats(startDate.getTime(), endDate.getTime())
+        .then(setMonthlyStats);
+
     } catch (error) {
       console.error('Failed to delete task:', error);
     }
   };
 
   const updateTask = async (id: string, updates: Partial<Task>) => {
-    const task = tasks.find(t => t.id === id);
-    if (!task) return;
-
     try {
       const updatedTask = await api.updateTask(id, updates);
-      setTasks(tasks.map(t =>
-        t.id === id ? { ...updatedTask, notes: t.notes } : t
-      ));
+      
+      // If taskTime changed, we might need to move it from lists
+      // For simplicity, let's refresh everything if taskTime changed
+      if (updates.taskTime) {
+        refreshData();
+      } else {
+        const updateList = (list: Task[]) => list.map(t => t.id === id ? { ...updatedTask, notes: t.notes } : t);
+        setTodayTasks(updateList);
+        setSelectedDateTasks(updateList);
+      }
+
       if (selectedTask?.id === id) {
         setSelectedTask(prev => prev ? { ...updatedTask, notes: prev.notes } : null);
       }
@@ -160,9 +241,11 @@ function App() {
 
       const createdNote = await api.createNote(taskId, newNote);
 
-      setTasks(tasks.map(task =>
+      const updateList = (list: Task[]) => list.map(task =>
         task.id === taskId ? { ...task, notes: [...task.notes, createdNote] } : task
-      ));
+      );
+      setTodayTasks(updateList);
+      setSelectedDateTasks(updateList);
 
       if (selectedTask?.id === taskId) {
         setSelectedTask(prev => prev ? { ...prev, notes: [...prev.notes, createdNote] } : null);
@@ -176,7 +259,7 @@ function App() {
     try {
       await api.deleteNote(noteId);
       
-      setTasks(tasks.map(task => {
+      const updateList = (list: Task[]) => list.map(task => {
         if (task.id === taskId) {
           return {
             ...task,
@@ -184,7 +267,9 @@ function App() {
           };
         }
         return task;
-      }));
+      });
+      setTodayTasks(updateList);
+      setSelectedDateTasks(updateList);
 
       if (selectedTask?.id === taskId) {
         setSelectedTask(prev => {
@@ -204,7 +289,7 @@ function App() {
     try {
       const updatedNote = await api.updateNote(noteId, content);
 
-      setTasks(tasks.map(task => {
+      const updateList = (list: Task[]) => list.map(task => {
         if (task.id === taskId) {
           return {
             ...task,
@@ -212,7 +297,9 @@ function App() {
           };
         }
         return task;
-      }));
+      });
+      setTodayTasks(updateList);
+      setSelectedDateTasks(updateList);
 
       if (selectedTask?.id === taskId) {
         setSelectedTask(prev => {
@@ -228,12 +315,7 @@ function App() {
     }
   };
 
-  // Filter tasks for "Today" view (Center)
-  const todayTasks = tasks.filter(task => isSameDay(new Date(task.taskTime || task.createdAt), new Date()));
   const activeTasksCount = todayTasks.filter(t => !t.completed).length;
-
-  // Filter tasks for "Selected Date" view (Sidebar)
-  const selectedDateTasks = tasks.filter(task => isSameDay(new Date(task.taskTime || task.createdAt), selectedDate));
 
   if (!token) {
     if (isRegistering) {
@@ -273,7 +355,7 @@ function App() {
         {/* Left Sidebar */}
         <div className="space-y-6">
           <Calendar 
-            tasks={tasks} 
+            stats={monthlyStats} 
             selectedDate={selectedDate} 
             onSelectDate={setSelectedDate}
             onMonthChange={setViewMonth}
@@ -301,7 +383,7 @@ function App() {
           </div>
           
           <div className="p-6">
-            <DailyStats tasks={tasks} />
+            <DailyStats tasks={todayTasks} />
             <AddTaskForm onAdd={addTask} />
             <TaskList 
               tasks={todayTasks} 

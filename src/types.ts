@@ -15,3 +15,9 @@ export interface Task {
   timeUnit?: 'minute' | 'hour' | 'day' | 'week' | 'month'; // Time unit
   taskTime?: number; // Task time as timestamp (milliseconds)
 }
+
+export interface TaskStat {
+  id: string;
+  taskTime: number;
+  completed: boolean;
+}

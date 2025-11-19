@@ -14,16 +14,16 @@ import {
 } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Task } from '../types';
+import { TaskStat } from '../types';
 
 interface CalendarProps {
-  tasks: Task[];
+  stats: TaskStat[];
   selectedDate: Date;
   onSelectDate: (date: Date) => void;
   onMonthChange?: (date: Date) => void;
 }
 
-export const Calendar: React.FC<CalendarProps> = ({ tasks, selectedDate, onSelectDate, onMonthChange }) => {
+export const Calendar: React.FC<CalendarProps> = ({ stats, selectedDate, onSelectDate, onMonthChange }) => {
   const [currentMonth, setCurrentMonth] = React.useState(new Date());
 
   const nextMonth = () => {
@@ -46,11 +46,11 @@ export const Calendar: React.FC<CalendarProps> = ({ tasks, selectedDate, onSelec
   const days = eachDayOfInterval({ start: startDate, end: endDate });
 
   const getDayStats = (date: Date) => {
-    const dayTasks = tasks.filter(task => isSameDay(new Date(task.taskTime || task.createdAt), date));
+    const dayStats = stats.filter(stat => isSameDay(new Date(stat.taskTime), date));
     return {
-      total: dayTasks.length,
-      completed: dayTasks.filter(t => t.completed).length,
-      incomplete: dayTasks.filter(t => !t.completed).length
+      total: dayStats.length,
+      completed: dayStats.filter(t => t.completed).length,
+      incomplete: dayStats.filter(t => !t.completed).length
     };
   };
 
