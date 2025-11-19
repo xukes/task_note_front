@@ -101,13 +101,12 @@ export const Calendar: React.FC<CalendarProps> = ({ tasks, selectedDate, onSelec
               <span className="text-sm">{format(day, 'd')}</span>
               
               {stats.total > 0 && (
-                <div className="flex gap-0.5 mt-1">
-                  {stats.incomplete > 0 && (
-                    <div className="w-1.5 h-1.5 rounded-full bg-red-400" title={`${stats.incomplete} 待办`} />
-                  )}
-                  {stats.completed > 0 && (
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-400" title={`${stats.completed} 已完成`} />
-                  )}
+                <div className="flex gap-0.5 mt-1 text-[10px] font-medium leading-none">
+                  <span className={`${stats.incomplete > 0 ? 'text-red-500' : 'text-gray-400'}`}>
+                    {stats.incomplete}
+                  </span>
+                  <span className="text-gray-300">/</span>
+                  <span className="text-gray-400">{stats.total}</span>
                 </div>
               )}
             </button>

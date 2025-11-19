@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Task, Note } from '../types';
 import { X, Send, Pencil, Trash2, CheckCircle2, Image as ImageIcon, Timer } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, isSameDay } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -229,7 +229,7 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {!task.completed && (
+            {!task.completed && !isSameDay(new Date(task.taskTime || task.createdAt), new Date()) && (
               <button
                 onClick={() => onUpdateTask(task.id, { taskTime: Date.now() })}
                 className="text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-3 py-1 rounded-md transition-colors"
