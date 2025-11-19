@@ -134,11 +134,11 @@ function App() {
 
     try {
       const updatedTask = await api.updateTask(id, updates);
-      setTasks(tasks.map(task =>
-        task.id === id ? { ...task, ...updates } : task
+      setTasks(tasks.map(t =>
+        t.id === id ? { ...updatedTask, notes: t.notes } : t
       ));
       if (selectedTask?.id === id) {
-        setSelectedTask(prev => prev ? { ...prev, ...updates } : null);
+        setSelectedTask(prev => prev ? { ...updatedTask, notes: prev.notes } : null);
       }
     } catch (error) {
       console.error('Failed to update task:', error);
