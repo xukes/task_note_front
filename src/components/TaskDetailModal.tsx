@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { Task, Note } from '../types';
-import { X, Send, Clock, Pencil, Trash2 } from 'lucide-react';
+import { X, Send, Clock, Pencil, Trash2, CheckCircle2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 interface TaskDetailModalProps {
   task: Task;
@@ -61,7 +64,7 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
+      <div className="bg-white rounded-2xl shadow-xl w-[90vw] max-w-6xl h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header */}
         <div className="p-6 border-b border-gray-100 flex justify-between items-start gap-4">
@@ -84,9 +87,17 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                 {task.title}
               </h2>
             )}
-            <div className="text-sm text-gray-500 mt-1 flex items-center gap-1">
-              <Clock size={14} />
-              创建于 {format(task.createdAt, 'PP p', { locale: zhCN })}
+            <div className="text-sm text-gray-500 mt-1 flex flex-col gap-1">
+              <div className="flex items-center gap-1">
+                <Clock size={14} />
+                创建于 {format(task.createdAt, 'PP p', { locale: zhCN })}
+              </div>
+              {task.completed && task.completedAt && (
+                <div className="flex items-center gap-1 text-green-600">
+                  <CheckCircle2 size={14} />
+                  完成于 {format(task.completedAt, 'PP p', { locale: zhCN })}
+                </div>
+              )}
             </div>
           </div>
           <button 
@@ -140,7 +151,32 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                       </div>
                     ) : (
                       <>
-                        <p className="text-gray-800 whitespace-pre-wrap leading-relaxed">{note.content}</p>
+                        <div className="text-gray-800 leading-relaxed text-sm overflow-hidden">
+                          <ReactMarkdown
+                            components={{
+                              code({node, inline, className, children, ...props}: any) {
+                                const match = /language-(\w+)/.exec(className || '')
+                                return !inline && match ? (
+                                  <SyntaxHighlighter
+                                    {...props}
+                                    style={vscDarkPlus}
+                                    language={match[1]}
+                                    PreTag="div"
+                                    customStyle={{ borderRadius: '0.5rem', margin: '0.5rem 0', fontSize: '12px' }}
+                                  >
+                                    {String(children).replace(/\n$/, '')}
+                                  </SyntaxHighlighter>
+                                ) : (
+                                  <code {...props} className={`${className} bg-gray-100 px-1 py-0.5 rounded text-red-500 font-mono text-xs`}>
+                                    {children}
+                                  </code>
+                                )
+                              }
+                            }}
+                          >
+                            {note.content}
+                          </ReactMarkdown>
+                        </div>
                         <div className="mt-2 text-xs text-gray-400 flex justify-between items-center">
                           <span>{format(note.createdAt, 'yyyy年M月d日 • aa h:mm', { locale: zhCN })}</span>
                         </div>

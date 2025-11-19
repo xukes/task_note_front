@@ -20,13 +20,23 @@ interface CalendarProps {
   tasks: Task[];
   selectedDate: Date;
   onSelectDate: (date: Date) => void;
+  onMonthChange?: (date: Date) => void;
 }
 
-export const Calendar: React.FC<CalendarProps> = ({ tasks, selectedDate, onSelectDate }) => {
+export const Calendar: React.FC<CalendarProps> = ({ tasks, selectedDate, onSelectDate, onMonthChange }) => {
   const [currentMonth, setCurrentMonth] = React.useState(new Date());
 
-  const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
-  const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
+  const nextMonth = () => {
+    const newDate = addMonths(currentMonth, 1);
+    setCurrentMonth(newDate);
+    onMonthChange?.(newDate);
+  };
+
+  const prevMonth = () => {
+    const newDate = subMonths(currentMonth, 1);
+    setCurrentMonth(newDate);
+    onMonthChange?.(newDate);
+  };
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(monthStart);

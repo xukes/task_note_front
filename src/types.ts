@@ -10,4 +10,5 @@ export interface Task {
   notes: Note[];
   completed: boolean;
   createdAt: number;
+  completedAt?: number;
 }
