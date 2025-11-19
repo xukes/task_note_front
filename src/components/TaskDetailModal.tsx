@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Task, Note } from '../types';
-import { X, Send, Clock, Pencil, Trash2, CheckCircle2, Image as ImageIcon } from 'lucide-react';
+import { X, Send, Clock, Pencil, Trash2, CheckCircle2, Image as ImageIcon, Timer } from 'lucide-react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import ReactMarkdown from 'react-markdown';
@@ -13,6 +13,7 @@ interface TaskDetailModalProps {
   onClose: () => void;
   onAddNote: (taskId: string, content: string) => void;
   onUpdateTitle: (taskId: string, title: string) => void;
+  onUpdateTask: (taskId: string, updates: Partial<Task>) => void;
   onDeleteNote: (taskId: string, noteId: string) => void;
   onUpdateNote: (taskId: string, noteId: string, content: string) => void;
 }
@@ -22,6 +23,7 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   onClose, 
   onAddNote, 
   onUpdateTitle,
+  onUpdateTask,
   onDeleteNote,
   onUpdateNote
 }) => {
@@ -30,6 +32,26 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   const [title, setTitle] = useState(task.title);
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [editNoteContent, setEditNoteContent] = useState('');
+  const [isEditingTime, setIsEditingTime] = useState(false);
+  const [timeSpent, setTimeSpent] = useState(task.timeSpent?.toString() || '');
+
+  const handleTimeBlur = () => {
+    const minutes = parseInt(timeSpent);
+    if (!isNaN(minutes) && minutes >= 0) {
+      if (minutes !== task.timeSpent) {
+        onUpdateTask(task.id, { timeSpent: minutes });
+      }
+    } else if (timeSpent === '') {
+      if (task.timeSpent !== undefined && task.timeSpent !== 0) {
+         onUpdateTask(task.id, { timeSpent: 0 });
+      }
+      setTimeSpent('');
+    } else {
+      // Reset invalid input
+      setTimeSpent(task.timeSpent?.toString() || '');
+    }
+    setIsEditingTime(false);
+  };
 
   const handleAddNote = (e: React.FormEvent) => {
     e.preventDefault();
@@ -144,6 +166,35 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                   完成于 {format(task.completedAt, 'PP p', { locale: zhCN })}
                 </div>
               )}
+              <div className="flex items-center gap-1 text-gray-600 group/time">
+                <Timer size={14} />
+                <span>耗时: </span>
+                {isEditingTime ? (
+                  <div className="flex items-center">
+                    <input
+                      type="number"
+                      min="0"
+                      value={timeSpent}
+                      onChange={(e) => setTimeSpent(e.target.value)}
+                      onBlur={handleTimeBlur}
+                      onKeyDown={(e) => e.key === 'Enter' && handleTimeBlur()}
+                      autoFocus
+                      className="w-16 px-1 py-0.5 text-sm border border-blue-500 rounded focus:outline-none"
+                      placeholder="0"
+                    />
+                    <span className="ml-1">分钟</span>
+                  </div>
+                ) : (
+                  <div 
+                    onClick={() => setIsEditingTime(true)}
+                    className="flex items-center cursor-pointer hover:text-blue-600 hover:bg-blue-50 px-1 rounded transition-colors"
+                    title="点击修改耗时"
+                  >
+                    <span>{task.timeSpent || 0} 分钟</span>
+                    <Pencil size={12} className="ml-1 opacity-0 group-hover/time:opacity-100 transition-opacity" />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           <button 

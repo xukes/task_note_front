@@ -11,4 +11,5 @@ export interface Task {
   completed: boolean;
   createdAt: number;
   completedAt?: number;
+  timeSpent?: number; // Time spent in minutes
 }

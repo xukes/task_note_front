@@ -26,6 +26,7 @@ export const api = {
       ...task,
       createdAt: task.created_at, // Already number
       completedAt: task.completed_at, // Already number or null
+      timeSpent: task.time_spent, // Map snake_case to camelCase
       notes: (task.notes || []).map((note: any) => ({
         ...note,
         createdAt: new Date(note.created_at).getTime() // Note still uses time.Time in backend? Let's check.
@@ -42,7 +43,8 @@ export const api = {
       body: JSON.stringify({
         id: task.id,
         title: task.title,
-        completed: task.completed
+        completed: task.completed,
+        time_spent: task.timeSpent
       })
     });
     if (!response.ok) throw new Error('Failed to create task');
@@ -51,15 +53,23 @@ export const api = {
       ...data,
       createdAt: data.created_at,
       completedAt: data.completed_at,
+      timeSpent: data.time_spent,
       notes: []
     };
   },
 
   updateTask: async (id: string, updates: Partial<Task>): Promise<Task> => {
+    // Convert camelCase to snake_case for backend
+    const backendUpdates: any = { ...updates };
+    if (updates.timeSpent !== undefined) {
+      backendUpdates.time_spent = updates.timeSpent;
+      delete backendUpdates.timeSpent;
+    }
+
     const response = await fetch(`${API_URL}/tasks/${id}`, {
       method: 'PUT',
       headers: getHeaders(),
-      body: JSON.stringify(updates)
+      body: JSON.stringify(backendUpdates)
     });
     if (!response.ok) throw new Error('Failed to update task');
     const data = await response.json();
@@ -67,6 +77,7 @@ export const api = {
       ...data,
       createdAt: data.created_at,
       completedAt: data.completed_at,
+      timeSpent: data.time_spent,
       notes: data.notes || []
     };
   },
@@ -82,6 +93,7 @@ export const api = {
       ...data,
       createdAt: data.created_at,
       completedAt: data.completed_at,
+      timeSpent: data.time_spent,
       notes: data.notes || []
     };
   },

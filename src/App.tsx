@@ -128,24 +128,25 @@ function App() {
     }
   };
 
-  const updateTaskTitle = async (id: string, title: string) => {
+  const updateTask = async (id: string, updates: Partial<Task>) => {
     const task = tasks.find(t => t.id === id);
     if (!task) return;
 
     try {
-      await api.updateTask(id, { 
-        title,
-        completed: task.completed
-      });
+      const updatedTask = await api.updateTask(id, updates);
       setTasks(tasks.map(task =>
-        task.id === id ? { ...task, title } : task
+        task.id === id ? { ...task, ...updates } : task
       ));
       if (selectedTask?.id === id) {
-        setSelectedTask(prev => prev ? { ...prev, title } : null);
+        setSelectedTask(prev => prev ? { ...prev, ...updates } : null);
       }
     } catch (error) {
-      console.error('Failed to update task title:', error);
+      console.error('Failed to update task:', error);
     }
+  };
+
+  const updateTaskTitle = async (id: string, title: string) => {
+    await updateTask(id, { title });
   };
 
 
@@ -321,6 +322,7 @@ function App() {
           onClose={() => setSelectedTask(null)}
           onAddNote={addNoteToTask}
           onUpdateTitle={updateTaskTitle}
+          onUpdateTask={updateTask}
           onDeleteNote={deleteNote}
           onUpdateNote={updateNote}
         />
