@@ -3,7 +3,7 @@ name: Deploy Frontend to Remote Server
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   build-and-deploy:
