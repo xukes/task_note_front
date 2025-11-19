@@ -229,11 +229,11 @@ function App() {
   };
 
   // Filter tasks for "Today" view (Center)
-  const todayTasks = tasks.filter(task => isSameDay(new Date(task.createdAt), new Date()));
+  const todayTasks = tasks.filter(task => isSameDay(new Date(task.taskTime || task.createdAt), new Date()));
   const activeTasksCount = todayTasks.filter(t => !t.completed).length;
 
   // Filter tasks for "Selected Date" view (Sidebar)
-  const selectedDateTasks = tasks.filter(task => isSameDay(new Date(task.createdAt), selectedDate));
+  const selectedDateTasks = tasks.filter(task => isSameDay(new Date(task.taskTime || task.createdAt), selectedDate));
 
   if (!token) {
     if (isRegistering) {

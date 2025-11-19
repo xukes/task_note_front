@@ -46,7 +46,7 @@ export const Calendar: React.FC<CalendarProps> = ({ tasks, selectedDate, onSelec
   const days = eachDayOfInterval({ start: startDate, end: endDate });
 
   const getDayStats = (date: Date) => {
-    const dayTasks = tasks.filter(task => isSameDay(new Date(task.createdAt), date));
+    const dayTasks = tasks.filter(task => isSameDay(new Date(task.taskTime || task.createdAt), date));
     return {
       total: dayTasks.length,
       completed: dayTasks.filter(t => t.completed).length,

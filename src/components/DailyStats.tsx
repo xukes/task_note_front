@@ -11,7 +11,7 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ tasks }) => {
   today.setHours(0, 0, 0, 0);
 
   const todaysTasks = tasks.filter(task => {
-    const taskDate = new Date(task.createdAt);
+    const taskDate = new Date(task.taskTime || task.createdAt);
     taskDate.setHours(0, 0, 0, 0);
     return taskDate.getTime() === today.getTime();
   });

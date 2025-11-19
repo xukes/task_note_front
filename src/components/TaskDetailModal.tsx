@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Task, Note } from '../types';
-import { X, Send, Clock, Pencil, Trash2, CheckCircle2, Image as ImageIcon, Timer } from 'lucide-react';
+import { X, Send, Pencil, Trash2, CheckCircle2, Image as ImageIcon, Timer } from 'lucide-react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import ReactMarkdown from 'react-markdown';
@@ -161,8 +161,8 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
             )}
             <div className="text-sm text-gray-500 mt-1 flex flex-col gap-1">
               <div className="flex items-center gap-1">
-                <Clock size={14} />
-                创建于 {format(task.createdAt, 'PP p', { locale: zhCN })}
+                <Timer size={14} />
+                任务时间 {format(task.taskTime || task.createdAt, 'PP p', { locale: zhCN })}
               </div>
               {task.completed && task.completedAt && (
                 <div className="flex items-center gap-1 text-green-600">
@@ -228,12 +228,23 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
               </div>
             </div>
           </div>
-          <button 
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-full transition-colors"
-          >
-            <X size={24} />
-          </button>
+          <div className="flex items-center gap-2">
+            {!task.completed && (
+              <button
+                onClick={() => onUpdateTask(task.id, { taskTime: Date.now() })}
+                className="text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-3 py-1 rounded-md transition-colors"
+                title="移动到今天"
+              >
+                移动到今天
+              </button>
+            )}
+            <button 
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-full transition-colors"
+            >
+              <X size={24} />
+            </button>
+          </div>
         </div>
 
         {/* Body - Notes List */}
