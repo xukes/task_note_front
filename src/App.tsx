@@ -10,11 +10,13 @@ import { LayoutList, LogOut } from 'lucide-react';
 import { isSameDay, startOfMonth, endOfMonth, startOfWeek, endOfWeek } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import { LoginPage } from './components/LoginPage';
+import { RegisterPage } from './components/RegisterPage';
 import { api } from './api';
 
 function App() {
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [username, setUsername] = useState<string | null>(localStorage.getItem('username'));
+  const [isRegistering, setIsRegistering] = useState(false);
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -91,7 +93,7 @@ function App() {
     if (!task) return;
 
     try {
-      const updated = await api.updateTask(id, { completed: !task.completed });
+      const updated = await api.toggleTask(id);
       // Preserve notes as updateTask might not return them fully populated depending on backend
       // But our api wrapper tries to handle it. 
       // Let's just update the local state optimistically or with result
@@ -126,8 +128,14 @@ function App() {
   };
 
   const updateTaskTitle = async (id: string, title: string) => {
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
+
     try {
-      await api.updateTask(id, { title });
+      await api.updateTask(id, { 
+        title,
+        completed: task.completed
+      });
       setTasks(tasks.map(task =>
         task.id === id ? { ...task, title } : task
       ));
@@ -226,7 +234,20 @@ function App() {
   const selectedDateTasks = tasks.filter(task => isSameDay(new Date(task.createdAt), selectedDate));
 
   if (!token) {
-    return <LoginPage onLogin={handleLogin} />;
+    if (isRegistering) {
+      return (
+        <RegisterPage 
+          onRegisterSuccess={() => setIsRegistering(false)} 
+          onSwitchToLogin={() => setIsRegistering(false)} 
+        />
+      );
+    }
+    return (
+      <LoginPage 
+        onLogin={handleLogin} 
+        onSwitchToRegister={() => setIsRegistering(true)} 
+      />
+    );
   }
 
   return (

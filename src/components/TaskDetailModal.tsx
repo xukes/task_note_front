@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Task, Note } from '../types';
-import { X, Send, Clock, Pencil, Trash2, CheckCircle2 } from 'lucide-react';
+import { X, Send, Clock, Pencil, Trash2, CheckCircle2, Image as ImageIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { api } from '../api';
 
 interface TaskDetailModalProps {
   task: Task;
@@ -39,8 +40,11 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   };
 
   const handleTitleBlur = () => {
-    if (title.trim() !== task.title) {
-      onUpdateTitle(task.id, title.trim());
+    const trimmedTitle = title.trim();
+    if (trimmedTitle && trimmedTitle !== task.title) {
+      onUpdateTitle(task.id, trimmedTitle);
+    } else if (!trimmedTitle) {
+      setTitle(task.title);
     }
     setIsEditingTitle(false);
   };
@@ -60,6 +64,48 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   const cancelNoteEdit = () => {
     setEditingNoteId(null);
     setEditNoteContent('');
+  };
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const url = await api.uploadImage(file);
+      const imageMarkdown = `\n![image](${url})\n`;
+      setNewNote(prev => prev + imageMarkdown);
+    } catch (error) {
+      console.error('Failed to upload image:', error);
+      alert('图片上传失败');
+    }
+    
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handlePaste = async (e: React.ClipboardEvent) => {
+    const items = e.clipboardData.items;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        e.preventDefault();
+        const file = items[i].getAsFile();
+        if (file) {
+          try {
+            const url = await api.uploadImage(file);
+            const imageMarkdown = `\n![image](${url})\n`;
+            setNewNote(prev => prev + imageMarkdown);
+          } catch (error) {
+            console.error('Failed to upload pasted image:', error);
+            alert('图片上传失败');
+          }
+        }
+        break;
+      }
+    }
   };
 
   return (
@@ -213,9 +259,10 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
             <textarea
               value={newNote}
               onChange={(e) => setNewNote(e.target.value)}
-              placeholder="输入笔记..."
-              className="w-full pl-4 pr-12 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none shadow-sm"
-              rows={2}
+              onPaste={handlePaste}
+              placeholder="输入笔记... (支持 Markdown，可直接粘贴图片)"
+              className="w-full pl-4 pr-20 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y shadow-sm"
+              rows={3}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
@@ -223,13 +270,31 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                 }
               }}
             />
-            <button
-              type="submit"
-              disabled={!newNote.trim()}
-              className="absolute right-2 bottom-2.5 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <Send size={16} />
-            </button>
+            
+            <div className="absolute right-2 bottom-2.5 flex gap-2">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageUpload}
+                accept="image/*"
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                title="上传图片"
+              >
+                <ImageIcon size={20} />
+              </button>
+              <button
+                type="submit"
+                disabled={!newNote.trim()}
+                className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <Send size={20} />
+              </button>
+            </div>
           </form>
         </div>
 

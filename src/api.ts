@@ -71,6 +71,21 @@ export const api = {
     };
   },
 
+  toggleTask: async (id: string): Promise<Task> => {
+    const response = await fetch(`${API_URL}/tasks/${id}/toggle`, {
+      method: 'PATCH',
+      headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to toggle task');
+    const data = await response.json();
+    return {
+      ...data,
+      createdAt: data.created_at,
+      completedAt: data.completed_at,
+      notes: data.notes || []
+    };
+  },
+
   deleteTask: async (id: string): Promise<void> => {
     const response = await fetch(`${API_URL}/tasks/${id}`, {
       method: 'DELETE',
@@ -95,6 +110,25 @@ export const api = {
       ...data,
       createdAt: new Date(data.created_at).getTime()
     };
+  },
+
+  uploadImage: async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/upload`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+        // Content-Type is automatically set by browser for FormData
+      },
+      body: formData
+    });
+
+    if (!response.ok) throw new Error('Failed to upload image');
+    const data = await response.json();
+    return data.url;
   },
 
   updateNote: async (id: string, content: string): Promise<Note> => {

@@ -3,9 +3,10 @@ import { User, Lock, LogIn } from 'lucide-react';
 
 interface LoginPageProps {
   onLogin: (token: string, username: string) => void;
+  onSwitchToRegister: () => void;
 }
 
-export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
+export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onSwitchToRegister }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -90,7 +91,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {isLoading ? (
               '登录中...'
@@ -101,9 +102,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
               </>
             )}
           </button>
-          
-          <div className="text-center text-sm text-gray-400">
-            默认账号: admin / 123456
+
+          <div className="text-center mt-4">
+            <span className="text-sm text-gray-600">还没有账号？</span>
+            <button
+              type="button"
+              onClick={onSwitchToRegister}
+              className="ml-1 text-sm text-blue-600 hover:text-blue-800 font-medium hover:underline"
+            >
+              立即注册
+            </button>
           </div>
         </form>
       </div>
