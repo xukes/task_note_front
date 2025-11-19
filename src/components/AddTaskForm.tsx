@@ -28,7 +28,7 @@ export const AddTaskForm: React.FC<AddTaskFormProps> = ({ onAdd }) => {
           value={title}
           onFocus={() => setIsExpanded(true)}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Add a new task..."
+          placeholder="添加新任务..."
           className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
       </div>
@@ -38,7 +38,7 @@ export const AddTaskForm: React.FC<AddTaskFormProps> = ({ onAdd }) => {
           <textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="Add a note (optional)..."
+            placeholder="添加备注 (可选)..."
             rows={3}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
           />
@@ -48,7 +48,7 @@ export const AddTaskForm: React.FC<AddTaskFormProps> = ({ onAdd }) => {
               onClick={() => setIsExpanded(false)}
               className="px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors"
             >
-              Cancel
+              取消
             </button>
             <button
               type="submit"
@@ -56,7 +56,7 @@ export const AddTaskForm: React.FC<AddTaskFormProps> = ({ onAdd }) => {
               className="flex items-center gap-2 px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <Plus size={20} />
-              Add Task
+              添加任务
             </button>
           </div>
         </div>

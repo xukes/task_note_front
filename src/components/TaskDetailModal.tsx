@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Task, Note } from '../types';
 import { X, Send, Clock } from 'lucide-react';
 import { format } from 'date-fns';
+import { zhCN } from 'date-fns/locale';
 
 interface TaskDetailModalProps {
   task: Task;
@@ -57,7 +58,7 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ task, onClose,
             )}
             <div className="text-sm text-gray-500 mt-1 flex items-center gap-1">
               <Clock size={14} />
-              Created {format(task.createdAt, 'PP p')}
+              创建于 {format(task.createdAt, 'PP p', { locale: zhCN })}
             </div>
           </div>
           <button 
@@ -70,11 +71,11 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ task, onClose,
 
         {/* Body - Notes List */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Activity & Notes</h3>
+          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">动态与笔记</h3>
           
           {task.notes.length === 0 ? (
             <div className="text-center py-8 text-gray-400 italic">
-              No notes yet. Add one below!
+              暂无笔记，在下方添加一条吧！
             </div>
           ) : (
             <div className="space-y-4">
@@ -87,7 +88,7 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ task, onClose,
                   <div className="flex-1 bg-gray-50 rounded-xl p-4 border border-gray-100">
                     <p className="text-gray-800 whitespace-pre-wrap leading-relaxed">{note.content}</p>
                     <div className="mt-2 text-xs text-gray-400">
-                      {format(note.createdAt, 'MMM d, yyyy • h:mm a')}
+                      {format(note.createdAt, 'yyyy年M月d日 • aa h:mm', { locale: zhCN })}
                     </div>
                   </div>
                 </div>
@@ -102,7 +103,7 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ task, onClose,
             <textarea
               value={newNote}
               onChange={(e) => setNewNote(e.target.value)}
-              placeholder="Type a note..."
+              placeholder="输入笔记..."
               className="w-full pl-4 pr-12 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none shadow-sm"
               rows={2}
               onKeyDown={(e) => {

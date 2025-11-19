@@ -131,10 +131,10 @@ function App() {
           <div className="p-6 bg-blue-600 text-white">
             <div className="flex items-center gap-3 mb-2">
               <LayoutList size={32} />
-              <h1 className="text-2xl font-bold">Today's Focus</h1>
+              <h1 className="text-2xl font-bold">今日专注</h1>
             </div>
             <p className="text-blue-100">
-              You have {activeTasksCount} active {activeTasksCount === 1 ? 'task' : 'tasks'} for today
+              今天还有 {activeTasksCount} 个待办任务
             </p>
           </div>
           

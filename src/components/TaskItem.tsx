@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Task } from '../types';
 import { Check, Trash2, Square, Pencil, X, Save, MessageSquare } from 'lucide-react';
+import { format } from 'date-fns';
+import { zhCN } from 'date-fns/locale';
 
 interface TaskItemProps {
   task: Task;
@@ -34,9 +36,9 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, on
     const isCurrentYear = date.getFullYear() === now.getFullYear();
     
     if (isCurrentYear) {
-      return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+      return format(date, 'M月d日', { locale: zhCN });
     }
-    return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+    return format(date, 'yyyy年M月d日', { locale: zhCN });
   };
 
   if (isEditing) {
@@ -47,7 +49,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, on
           value={editTitle}
           onChange={(e) => setEditTitle(e.target.value)}
           className="w-full mb-2 px-2 py-1 text-lg font-medium border-b border-gray-200 focus:outline-none focus:border-blue-500"
-          placeholder="Task title"
+          placeholder="任务标题"
           autoFocus
           onClick={(e) => e.stopPropagation()}
         />
@@ -57,14 +59,14 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, on
             className="flex items-center gap-1 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
           >
             <X size={16} />
-            Cancel
+            取消
           </button>
           <button
             onClick={handleSave}
             className="flex items-center gap-1 px-3 py-1.5 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
           >
             <Save size={16} />
-            Save
+            保存
           </button>
         </div>
       </div>
@@ -94,7 +96,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, on
             {task.notes.length > 0 && (
               <div className="flex items-center gap-1 text-xs text-blue-500 font-medium bg-blue-50 px-2 py-0.5 rounded-full">
                 <MessageSquare size={12} />
-                {task.notes.length} {task.notes.length === 1 ? 'note' : 'notes'}
+                {task.notes.length} {task.notes.length === 1 ? '条笔记' : '条笔记'}
               </div>
             )}
           </div>

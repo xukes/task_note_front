@@ -25,28 +25,28 @@ export const DailyStats: React.FC<DailyStatsProps> = ({ tasks }) => {
       <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
         <div className="flex items-center gap-2 text-blue-600 mb-1">
           <PieChart size={20} />
-          <span className="font-medium">Progress</span>
+          <span className="font-medium">进度</span>
         </div>
         <div className="text-2xl font-bold text-blue-700">{progress}%</div>
-        <div className="text-xs text-blue-500">Daily Completion</div>
+        <div className="text-xs text-blue-500">今日完成率</div>
       </div>
       
       <div className="bg-green-50 p-4 rounded-xl border border-green-100">
         <div className="flex items-center gap-2 text-green-600 mb-1">
           <CheckCircle2 size={20} />
-          <span className="font-medium">Completed</span>
+          <span className="font-medium">已完成</span>
         </div>
         <div className="text-2xl font-bold text-green-700">{completed}</div>
-        <div className="text-xs text-green-500">Tasks Done</div>
+        <div className="text-xs text-green-500">完成任务数</div>
       </div>
 
       <div className="bg-purple-50 p-4 rounded-xl border border-purple-100">
         <div className="flex items-center gap-2 text-purple-600 mb-1">
           <Circle size={20} />
-          <span className="font-medium">Total</span>
+          <span className="font-medium">总计</span>
         </div>
         <div className="text-2xl font-bold text-purple-700">{total}</div>
-        <div className="text-xs text-purple-500">Tasks Today</div>
+        <div className="text-xs text-purple-500">今日任务总数</div>
       </div>
     </div>
   );

@@ -14,7 +14,7 @@ export const TaskList: React.FC<TaskListProps> = ({ tasks, onToggle, onDelete, o
   if (tasks.length === 0) {
     return (
       <div className="text-center py-10 text-gray-500">
-        No tasks yet. Add one above!
+        暂无任务，在上方添加一个吧！
       </div>
     );
   }
