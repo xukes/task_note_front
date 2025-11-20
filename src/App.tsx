@@ -223,6 +223,36 @@ function App() {
     await updateTask(id, { title });
   };
 
+  const handleOrderChange = async (newTasks: Task[]) => {
+    // Re-assign sort orders based on new index
+    const updatedTasks = newTasks.map((t, index) => ({
+      ...t,
+      sortOrder: (index + 1) * 100
+    }));
+    
+    setTodayTasks(updatedTasks);
+
+    // Find tasks that actually changed order and update them
+    // Actually, since we re-index everything, we might need to update many.
+    // But usually only the moved task and maybe neighbors need update if we were doing linked list.
+    // Here we just update everyone whose sortOrder changed.
+    
+    const updates = updatedTasks.filter(t => {
+       const original = todayTasks.find(old => old.id === t.id);
+       return original && original.sortOrder !== t.sortOrder;
+    });
+
+    // Send updates in parallel
+    try {
+      await Promise.all(updates.map(t => 
+        api.updateTask(t.id, { sortOrder: t.sortOrder })
+      ));
+    } catch (error) {
+      console.error("Failed to update order", error);
+      refreshData();
+    }
+  };
+
 
   const addNoteToTask = async (taskId: number, content: string) => {
     try {
@@ -394,6 +424,7 @@ function App() {
               onDelete={deleteTask} 
               onUpdateTitle={updateTaskTitle}
               onTaskClick={setSelectedTask}
+              onOrderChange={handleOrderChange}
             />
           </div>
         </div>

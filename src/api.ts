@@ -29,6 +29,7 @@ export const api = {
       timeSpent: task.time_spent, // Map snake_case to camelCase
       timeUnit: task.time_unit, // Map snake_case to camelCase
       taskTime: task.task_time,
+      sortOrder: task.sort_order,
       notes: (task.notes || []).map((note: any) => ({
         ...note,
         createdAt: new Date(note.created_at).getTime()
@@ -92,6 +93,10 @@ export const api = {
     if (updates.taskTime !== undefined) {
       backendUpdates.task_time = updates.taskTime;
       delete backendUpdates.taskTime;
+    }
+    if (updates.sortOrder !== undefined) {
+      backendUpdates.sort_order = updates.sortOrder;
+      delete backendUpdates.sortOrder;
     }
 
     const response = await fetch(`${API_URL}/tasks/${id}`, {

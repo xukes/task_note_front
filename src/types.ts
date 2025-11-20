@@ -14,6 +14,7 @@ export interface Task {
   timeSpent?: number; // Time spent value
   timeUnit?: 'minute' | 'hour' | 'day' | 'week' | 'month'; // Time unit
   taskTime?: number; // Task time as timestamp (milliseconds)
+  sortOrder?: number;
 }
 
 export interface TaskStat {
