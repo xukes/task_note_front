@@ -42,6 +42,13 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   const prevNotesLengthRef = useRef(task.notes.length);
 
   useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+
+  useEffect(() => {
     if (notesListRef.current && task.notes.length > prevNotesLengthRef.current) {
       notesListRef.current.scrollTop = notesListRef.current.scrollHeight;
     }

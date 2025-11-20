@@ -19,8 +19,10 @@ export function Bind2FAModal({ isOpen, onClose }: Bind2FAModalProps) {
 
   useEffect(() => {
     if (isOpen) {
+      document.body.style.overflow = 'hidden';
       checkStatus();
     } else {
+        document.body.style.overflow = 'unset';
         // Reset state when closed
         setSecret('');
         setQrUrl('');
@@ -29,6 +31,9 @@ export function Bind2FAModal({ isOpen, onClose }: Bind2FAModalProps) {
         setSuccess(false);
         setIsBound(false);
     }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
   }, [isOpen]);
 
   const checkStatus = async () => {

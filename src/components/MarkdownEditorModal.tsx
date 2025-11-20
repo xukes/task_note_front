@@ -27,6 +27,17 @@ export const MarkdownEditorModal: React.FC<MarkdownEditorModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen) {
       setContent(initialValue);
       setMode(initialMode);
     }

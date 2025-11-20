@@ -22,10 +22,16 @@ export function UserProfileModal({ isOpen, onClose, username }: UserProfileModal
 
   useEffect(() => {
     if (isOpen) {
+      document.body.style.overflow = 'hidden';
       checkStatus();
       setActiveTab('list');
       resetTotpState();
+    } else {
+      document.body.style.overflow = 'unset';
     }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
   }, [isOpen]);
 
   // 关闭时重置状态
