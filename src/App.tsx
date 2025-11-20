@@ -13,6 +13,7 @@ import { zhCN } from 'date-fns/locale';
 import { LoginPage } from './components/LoginPage';
 import { RegisterPage } from './components/RegisterPage';
 import { ResetPasswordPage } from './components/ResetPasswordPage';
+import { SearchBox } from './components/SearchBox';
 import { api } from './api';
 
 function App() {
@@ -416,6 +417,7 @@ function App() {
           </div>
           
           <div className="p-6">
+            <SearchBox onTaskClick={setSelectedTask} />
             <DailyStats tasks={todayTasks} />
             <AddTaskForm onAdd={addTask} />
             <TaskList 

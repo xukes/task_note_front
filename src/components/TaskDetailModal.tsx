@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Task, Note } from '../types';
 import { X, Send, Pencil, Trash2, CheckCircle2, Image as ImageIcon, Timer, Maximize2 } from 'lucide-react';
 import { format, isSameDay } from 'date-fns';
@@ -38,6 +38,29 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   const [timeUnit, setTimeUnit] = useState<'minute' | 'hour' | 'day' | 'week' | 'month'>(task.timeUnit || 'minute');
   const [isMarkdownEditorOpen, setIsMarkdownEditorOpen] = useState(false);
   const [fullScreenNote, setFullScreenNote] = useState<{id: number, content: string} | null>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (isMarkdownEditorOpen) {
+          setIsMarkdownEditorOpen(false);
+        } else if (fullScreenNote) {
+          setFullScreenNote(null);
+        } else if (editingNoteId !== null) {
+          cancelNoteEdit();
+        } else if (isEditingTitle) {
+          setIsEditingTitle(false);
+        } else if (isEditingTime) {
+          setIsEditingTime(false);
+        } else {
+          onClose();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose, isMarkdownEditorOpen, fullScreenNote, editingNoteId, isEditingTitle, isEditingTime]);
 
   const handleTimeBlur = () => {
     const value = parseFloat(timeSpent);

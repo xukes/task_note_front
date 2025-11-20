@@ -30,6 +30,7 @@ export const api = {
       timeUnit: task.time_unit, // Map snake_case to camelCase
       taskTime: task.task_time,
       sortOrder: task.sort_order,
+      highlights: task.highlights,
       notes: (task.notes || []).map((note: any) => ({
         ...note,
         createdAt: new Date(note.created_at).getTime()
@@ -199,5 +200,26 @@ export const api = {
       headers: getHeaders()
     });
     if (!response.ok) throw new Error('Failed to delete note');
+  },
+
+  searchTasks: async (query: string): Promise<Task[]> => {
+    const response = await fetch(`${API_URL}/search?q=${encodeURIComponent(query)}`, {
+      headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to search tasks');
+    const data = await response.json();
+    return data.map((task: any) => ({
+      ...task,
+      createdAt: task.created_at,
+      completedAt: task.completed_at,
+      timeSpent: task.time_spent,
+      timeUnit: task.time_unit,
+      taskTime: task.task_time,
+      sortOrder: task.sort_order,
+      notes: (task.notes || []).map((note: any) => ({
+        ...note,
+        createdAt: new Date(note.created_at).getTime()
+      }))
+    }));
   }
 };

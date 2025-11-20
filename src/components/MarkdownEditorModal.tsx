@@ -32,6 +32,16 @@ export const MarkdownEditorModal: React.FC<MarkdownEditorModalProps> = ({
     }
   }, [isOpen, initialValue, initialMode]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isOpen && e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const handleSave = () => {
