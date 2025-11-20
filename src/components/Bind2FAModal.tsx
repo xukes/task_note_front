@@ -118,23 +118,23 @@ export function Bind2FAModal({ isOpen, onClose }: Bind2FAModalProps) {
         </button>
 
         <h2 className="text-xl font-bold mb-4">
-          {isBound ? 'Google Authenticator Status' : 'Bind Google Authenticator'}
+          {isBound ? '谷歌验证器状态' : '绑定谷歌验证器'}
         </h2>
 
         {loading ? (
-          <div className="text-center py-8 text-gray-500">Loading...</div>
+          <div className="text-center py-8 text-gray-500">加载中...</div>
         ) : isBound ? (
           <div className="text-center py-8">
             <div className="bg-green-100 text-green-700 p-4 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
               <Check size={32} />
             </div>
-            <p className="text-lg font-medium text-gray-800 mb-2">Two-Factor Authentication is Enabled</p>
-            <p className="text-gray-500 mb-6">Your account is secured with Google Authenticator.</p>
+            <p className="text-lg font-medium text-gray-800 mb-2">双重认证已启用</p>
+            <p className="text-gray-500 mb-6">您的账户已通过谷歌验证器保护。</p>
             <button 
               onClick={() => { setIsBound(false); generateSecret(); }}
               className="text-blue-600 hover:text-blue-800 underline text-sm"
             >
-              Re-bind (Reset)
+              重新绑定 (重置)
             </button>
           </div>
         ) : (
@@ -148,7 +148,7 @@ export function Bind2FAModal({ isOpen, onClose }: Bind2FAModalProps) {
             {success ? (
               <div className="bg-green-100 text-green-700 p-4 rounded text-center">
                 <Check className="mx-auto mb-2" size={32} />
-                <p>Successfully bound!</p>
+                <p>绑定成功！</p>
               </div>
             ) : (
               <div className="space-y-6">
@@ -160,7 +160,7 @@ export function Bind2FAModal({ isOpen, onClose }: Bind2FAModalProps) {
                   )}
                   
                   <div className="w-full">
-                    <p className="text-sm text-gray-500 mb-2">Or enter secret manually:</p>
+                    <p className="text-sm text-gray-500 mb-2">或手动输入密钥：</p>
                     <div className="flex items-center space-x-2">
                       <code className="flex-1 bg-gray-100 p-2 rounded text-sm font-mono break-all">
                         {secret}
@@ -178,7 +178,7 @@ export function Bind2FAModal({ isOpen, onClose }: Bind2FAModalProps) {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Verification Code
+                    验证码
                   </label>
                   <input
                     type="text"
@@ -195,7 +195,7 @@ export function Bind2FAModal({ isOpen, onClose }: Bind2FAModalProps) {
                   disabled={token.length !== 6}
                   className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Verify & Bind
+                  验证并绑定
                 </button>
               </div>
             )}

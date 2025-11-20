@@ -1,12 +1,13 @@
 import React, { useState, useRef } from 'react';
 import { Task, Note } from '../types';
-import { X, Send, Pencil, Trash2, CheckCircle2, Image as ImageIcon, Timer } from 'lucide-react';
+import { X, Send, Pencil, Trash2, CheckCircle2, Image as ImageIcon, Timer, Maximize2 } from 'lucide-react';
 import { format, isSameDay } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { api } from '../api';
+import { MarkdownEditorModal } from './MarkdownEditorModal';
 
 interface TaskDetailModalProps {
   task: Task;
@@ -35,6 +36,8 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   const [isEditingTime, setIsEditingTime] = useState(false);
   const [timeSpent, setTimeSpent] = useState(task.timeSpent?.toString() || '');
   const [timeUnit, setTimeUnit] = useState<'minute' | 'hour' | 'day' | 'week' | 'month'>(task.timeUnit || 'minute');
+  const [isMarkdownEditorOpen, setIsMarkdownEditorOpen] = useState(false);
+  const [fullScreenNote, setFullScreenNote] = useState<{id: number, content: string} | null>(null);
 
   const handleTimeBlur = () => {
     const value = parseFloat(timeSpent);
@@ -323,6 +326,13 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                         {/* Edit/Delete Actions */}
                         <div className="absolute top-2 right-2 opacity-0 group-hover/note:opacity-100 transition-opacity flex gap-1 bg-white/80 backdrop-blur-sm rounded-lg p-1">
                           <button
+                            onClick={() => setFullScreenNote({ id: note.id, content: note.content })}
+                            className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                            title="全屏浏览/编辑"
+                          >
+                            <Maximize2 size={14} />
+                          </button>
+                          <button
                             onClick={() => startEditingNote(note)}
                             className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
                             title="编辑笔记"
@@ -365,6 +375,14 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
             />
             
             <div className="absolute right-2 bottom-2.5 flex gap-2">
+              <button
+                type="button"
+                onClick={() => setIsMarkdownEditorOpen(true)}
+                className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                title="全屏编辑 (Markdown)"
+              >
+                <Maximize2 size={20} />
+              </button>
               <input
                 type="file"
                 ref={fileInputRef}
@@ -390,6 +408,25 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
             </div>
           </form>
         </div>
+
+        <MarkdownEditorModal
+          isOpen={isMarkdownEditorOpen}
+          onClose={() => setIsMarkdownEditorOpen(false)}
+          initialValue={newNote}
+          onSave={(content) => setNewNote(content)}
+        />
+
+        <MarkdownEditorModal
+          isOpen={!!fullScreenNote}
+          onClose={() => setFullScreenNote(null)}
+          initialValue={fullScreenNote?.content || ''}
+          onSave={(content) => {
+            if (fullScreenNote) {
+              onUpdateNote(task.id, fullScreenNote.id, content);
+              setFullScreenNote(null);
+            }
+          }}
+        />
 
       </div>
     </div>

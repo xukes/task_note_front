@@ -121,7 +121,7 @@ export function UserProfileModal({ isOpen, onClose, username }: UserProfileModal
                 </button>
              )}
              <h2 className="text-lg font-semibold text-gray-800">
-                {activeTab === 'list' ? 'Account Settings' : 'Google Authenticator'}
+                {activeTab === 'list' ? '账户设置' : '谷歌验证器'}
              </h2>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
@@ -139,12 +139,12 @@ export function UserProfileModal({ isOpen, onClose, username }: UserProfileModal
                             {username?.[0]?.toUpperCase()}
                         </div>
                         <h3 className="text-xl font-bold text-gray-900">{username}</h3>
-                        <p className="text-gray-500 text-sm">Personal Account</p>
+                        <p className="text-gray-500 text-sm">个人账户</p>
                     </div>
 
                     {/* Security Options */}
                     <div className="p-4">
-                        <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Security</h4>
+                        <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">安全</h4>
                         <div className="space-y-2">
                             {/* Google Authenticator */}
                             <button 
@@ -159,9 +159,9 @@ export function UserProfileModal({ isOpen, onClose, username }: UserProfileModal
                                         <ShieldCheck size={20} />
                                     </div>
                                     <div className="text-left">
-                                        <div className="font-medium text-gray-900">Google Authenticator</div>
+                                        <div className="font-medium text-gray-900">谷歌验证器</div>
                                         <div className={`text-xs ${totpEnabled ? 'text-green-600' : 'text-gray-500'}`}>
-                                            {totpEnabled ? 'Enabled' : 'Not configured'}
+                                            {totpEnabled ? '已启用' : '未配置'}
                                         </div>
                                     </div>
                                 </div>
@@ -175,11 +175,11 @@ export function UserProfileModal({ isOpen, onClose, username }: UserProfileModal
                                         <Mail size={20} />
                                     </div>
                                     <div className="text-left">
-                                        <div className="font-medium text-gray-900">Email Address</div>
-                                        <div className="text-xs text-gray-500">Not bound</div>
+                                        <div className="font-medium text-gray-900">邮箱地址</div>
+                                        <div className="text-xs text-gray-500">未绑定</div>
                                     </div>
                                 </div>
-                                <span className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-500">Coming Soon</span>
+                                <span className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-500">即将推出</span>
                             </div>
 
                             {/* Twitter (Placeholder) */}
@@ -190,10 +190,10 @@ export function UserProfileModal({ isOpen, onClose, username }: UserProfileModal
                                     </div>
                                     <div className="text-left">
                                         <div className="font-medium text-gray-900">Twitter</div>
-                                        <div className="text-xs text-gray-500">Not bound</div>
+                                        <div className="text-xs text-gray-500">未绑定</div>
                                     </div>
                                 </div>
-                                <span className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-500">Coming Soon</span>
+                                <span className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-500">即将推出</span>
                             </div>
                         </div>
                     </div>
@@ -206,13 +206,13 @@ export function UserProfileModal({ isOpen, onClose, username }: UserProfileModal
                             <div className="bg-green-100 text-green-700 p-4 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                                 <Check size={32} />
                             </div>
-                            <p className="text-lg font-medium text-gray-800 mb-2">Two-Factor Authentication is Enabled</p>
-                            <p className="text-gray-500 mb-6 text-sm">Your account is secured. You can reset it if you lost your device.</p>
+                            <p className="text-lg font-medium text-gray-800 mb-2">双重认证已启用</p>
+                            <p className="text-gray-500 mb-6 text-sm">您的账户已受保护。如果设备丢失，您可以重置它。</p>
                             <button 
                                 onClick={() => { setTotpEnabled(false); generateSecret(); }}
                                 className="text-blue-600 hover:text-blue-800 text-sm font-medium hover:underline"
                             >
-                                Reset Configuration
+                                重置配置
                             </button>
                         </div>
                     ) : (
@@ -226,13 +226,13 @@ export function UserProfileModal({ isOpen, onClose, username }: UserProfileModal
                             {success ? (
                                 <div className="bg-green-50 text-green-700 p-6 rounded-xl text-center">
                                     <Check className="mx-auto mb-3" size={40} />
-                                    <p className="font-medium">Successfully bound!</p>
+                                    <p className="font-medium">绑定成功！</p>
                                 </div>
                             ) : (
                                 <>
                                     <div className="text-center">
                                         <p className="text-sm text-gray-600 mb-4">
-                                            Scan the QR code with your authenticator app (Google Authenticator, Authy, etc.)
+                                            使用验证器应用（Google Authenticator, Authy 等）扫描二维码
                                         </p>
                                         {qrUrl ? (
                                             <div className="bg-white p-4 rounded-xl border inline-block shadow-sm">
@@ -240,7 +240,7 @@ export function UserProfileModal({ isOpen, onClose, username }: UserProfileModal
                                             </div>
                                         ) : (
                                             <div className="h-[214px] flex items-center justify-center text-gray-400">
-                                                Loading...
+                                                加载中...
                                             </div>
                                         )}
                                     </div>
@@ -258,7 +258,7 @@ export function UserProfileModal({ isOpen, onClose, username }: UserProfileModal
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Enter 6-digit Code
+                                            输入6位验证码
                                         </label>
                                         <input
                                             type="text"
@@ -275,7 +275,7 @@ export function UserProfileModal({ isOpen, onClose, username }: UserProfileModal
                                         disabled={token.length !== 6}
                                         className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
                                     >
-                                        Verify & Enable
+                                        验证并启用
                                     </button>
                                 </>
                             )}
