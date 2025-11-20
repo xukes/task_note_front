@@ -38,6 +38,15 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   const [timeUnit, setTimeUnit] = useState<'minute' | 'hour' | 'day' | 'week' | 'month'>(task.timeUnit || 'minute');
   const [isMarkdownEditorOpen, setIsMarkdownEditorOpen] = useState(false);
   const [fullScreenNote, setFullScreenNote] = useState<{id: number, content: string} | null>(null);
+  const notesListRef = useRef<HTMLDivElement>(null);
+  const prevNotesLengthRef = useRef(task.notes.length);
+
+  useEffect(() => {
+    if (notesListRef.current && task.notes.length > prevNotesLengthRef.current) {
+      notesListRef.current.scrollTop = notesListRef.current.scrollHeight;
+    }
+    prevNotesLengthRef.current = task.notes.length;
+  }, [task.notes]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -274,7 +283,7 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
         </div>
 
         {/* Body - Notes List */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6" ref={notesListRef}>
           <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">动态与笔记</h3>
           
           {task.notes.length === 0 ? (
