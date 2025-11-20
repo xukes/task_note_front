@@ -7,9 +7,9 @@ import { zhCN } from 'date-fns/locale';
 interface SidebarTaskListProps {
   date: Date;
   tasks: Task[];
-  onToggle: (id: string) => void;
-  onDelete: (id: string) => void;
-  onUpdateTitle: (id: string, title: string) => void;
+  onToggle: (id: number) => void;
+  onDelete: (id: number) => void;
+  onUpdateTitle: (id: number, title: string) => void;
   onTaskClick: (task: Task) => void;
 }
 

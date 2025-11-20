@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Task, Note, TaskStat } from './types';
+import { Task,  TaskStat } from './types';
 import { AddTaskForm } from './components/AddTaskForm';
 import { TaskList } from './components/TaskList';
 import { DailyStats } from './components/DailyStats';
@@ -8,7 +8,6 @@ import { SidebarTaskList } from './components/SidebarTaskList';
 import { TaskDetailModal } from './components/TaskDetailModal';
 import { LayoutList, LogOut } from 'lucide-react';
 import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, startOfDay, endOfDay } from 'date-fns';
-import { v4 as uuidv4 } from 'uuid';
 import { zhCN } from 'date-fns/locale';
 import { LoginPage } from './components/LoginPage';
 import { RegisterPage } from './components/RegisterPage';
@@ -112,8 +111,7 @@ function App() {
 
   const addTask = async (title: string, noteContent: string) => {
     try {
-      const newTask: Task = {
-        id: uuidv4(),
+      const newTask = {
         title,
         notes: [],
         completed: false,
@@ -121,19 +119,10 @@ function App() {
         taskTime: Date.now() // Default to now
       };
       
-      await api.createTask(newTask);
+      const createdTask = await api.createTask(newTask);
       
       if (noteContent) {
-        const note: Note = {
-          id: uuidv4(),
-          content: noteContent,
-          createdAt: Date.now()
-        };
-        // We need to wait for task creation to get ID if backend generates it, 
-        // but here we generate UUID on frontend.
-        // However, api.createTask returns the created task.
-        // Let's assume the ID we sent is used.
-        await api.createNote(newTask.id, note);
+        await api.createNote(createdTask.id, noteContent);
       }
 
       refreshData();
@@ -143,7 +132,7 @@ function App() {
     }
   };
 
-  const toggleTask = async (id: string) => {
+  const toggleTask = async (id: number) => {
     try {
       const updated = await api.toggleTask(id);
       
@@ -181,7 +170,7 @@ function App() {
     }
   };
 
-  const deleteTask = async (id: string) => {
+  const deleteTask = async (id: number) => {
     try {
       await api.deleteTask(id);
       setTodayTasks(prev => prev.filter(t => t.id !== id));
@@ -204,7 +193,7 @@ function App() {
     }
   };
 
-  const updateTask = async (id: string, updates: Partial<Task>) => {
+  const updateTask = async (id: number, updates: Partial<Task>) => {
     try {
       const updatedTask = await api.updateTask(id, updates);
       
@@ -226,20 +215,14 @@ function App() {
     }
   };
 
-  const updateTaskTitle = async (id: string, title: string) => {
+  const updateTaskTitle = async (id: number, title: string) => {
     await updateTask(id, { title });
   };
 
 
-  const addNoteToTask = async (taskId: string, content: string) => {
+  const addNoteToTask = async (taskId: number, content: string) => {
     try {
-      const newNote: Note = {
-        id: uuidv4(),
-        content,
-        createdAt: Date.now()
-      };
-
-      const createdNote = await api.createNote(taskId, newNote);
+      const createdNote = await api.createNote(taskId, content);
 
       const updateList = (list: Task[]) => list.map(task =>
         task.id === taskId ? { ...task, notes: [...task.notes, createdNote] } : task
@@ -255,7 +238,7 @@ function App() {
     }
   };
 
-  const deleteNote = async (taskId: string, noteId: string) => {
+  const deleteNote = async (taskId: number, noteId: number) => {
     try {
       await api.deleteNote(noteId);
       
@@ -285,7 +268,7 @@ function App() {
     }
   };
 
-  const updateNote = async (taskId: string, noteId: string, content: string) => {
+  const updateNote = async (taskId: number, noteId: number, content: string) => {
     try {
       const updatedNote = await api.updateNote(noteId, content);
 

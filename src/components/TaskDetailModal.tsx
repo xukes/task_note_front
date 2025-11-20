@@ -11,11 +11,11 @@ import { api } from '../api';
 interface TaskDetailModalProps {
   task: Task;
   onClose: () => void;
-  onAddNote: (taskId: string, content: string) => void;
-  onUpdateTitle: (taskId: string, title: string) => void;
-  onUpdateTask: (taskId: string, updates: Partial<Task>) => void;
-  onDeleteNote: (taskId: string, noteId: string) => void;
-  onUpdateNote: (taskId: string, noteId: string, content: string) => void;
+  onAddNote: (taskId: number, content: string) => void;
+  onUpdateTitle: (taskId: number, title: string) => void;
+  onUpdateTask: (taskId: number, updates: Partial<Task>) => void;
+  onDeleteNote: (taskId: number, noteId: number) => void;
+  onUpdateNote: (taskId: number, noteId: number, content: string) => void;
 }
 
 export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ 
@@ -30,7 +30,7 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   const [newNote, setNewNote] = useState('');
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [title, setTitle] = useState(task.title);
-  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
   const [editNoteContent, setEditNoteContent] = useState('');
   const [isEditingTime, setIsEditingTime] = useState(false);
   const [timeSpent, setTimeSpent] = useState(task.timeSpent?.toString() || '');
@@ -80,7 +80,7 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
     setEditNoteContent(note.content);
   };
 
-  const saveNoteEdit = (noteId: string) => {
+  const saveNoteEdit = (noteId: number) => {
     if (editNoteContent.trim()) {
       onUpdateNote(task.id, noteId, editNoteContent.trim());
       setEditingNoteId(null);

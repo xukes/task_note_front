@@ -1,4 +1,4 @@
-import { Task, Note } from './types';
+import { Task, Note, TaskStat } from './types';
 
 const API_URL = `${import.meta.env.VITE_API_URL}/api`;
 
@@ -36,7 +36,7 @@ export const api = {
     }));
   },
 
-  fetchTaskStats: async (startDate: number, endDate: number): Promise<{ id: string; taskTime: number; completed: boolean }[]> => {
+  fetchTaskStats: async (startDate: number, endDate: number): Promise<TaskStat[]> => {
     const params = new URLSearchParams();
     params.append('start_date', startDate.toString());
     params.append('end_date', endDate.toString());
@@ -46,19 +46,18 @@ export const api = {
     });
     if (!response.ok) throw new Error('Failed to fetch task stats');
     const data = await response.json();
-    return data.map((task: any) => ({
-      id: task.id,
-      taskTime: task.task_time,
-      completed: task.completed
+    return data.map((stat: any) => ({
+      date: stat.date,
+      totalCount: stat.total_count,
+      unCompletedCount: stat.un_completed_count
     }));
   },
 
-  createTask: async (task: Task): Promise<Task> => {
+  createTask: async (task: Omit<Task, 'id' | 'createdAt' | 'notes'>): Promise<Task> => {
     const response = await fetch(`${API_URL}/tasks`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({
-        id: task.id,
         title: task.title,
         completed: task.completed,
         time_spent: task.timeSpent,
@@ -79,7 +78,7 @@ export const api = {
     };
   },
 
-  updateTask: async (id: string, updates: Partial<Task>): Promise<Task> => {
+  updateTask: async (id: number, updates: Partial<Task>): Promise<Task> => {
     // Convert camelCase to snake_case for backend
     const backendUpdates: any = { ...updates };
     if (updates.timeSpent !== undefined) {
@@ -113,7 +112,7 @@ export const api = {
     };
   },
 
-  toggleTask: async (id: string): Promise<Task> => {
+  toggleTask: async (id: number): Promise<Task> => {
     const response = await fetch(`${API_URL}/tasks/${id}/toggle`, {
       method: 'PATCH',
       headers: getHeaders()
@@ -131,7 +130,7 @@ export const api = {
     };
   },
 
-  deleteTask: async (id: string): Promise<void> => {
+  deleteTask: async (id: number): Promise<void> => {
     const response = await fetch(`${API_URL}/tasks/${id}`, {
       method: 'DELETE',
       headers: getHeaders()
@@ -139,14 +138,13 @@ export const api = {
     if (!response.ok) throw new Error('Failed to delete task');
   },
 
-  createNote: async (taskId: string, note: Note): Promise<Note> => {
+  createNote: async (taskId: number, content: string): Promise<Note> => {
     const response = await fetch(`${API_URL}/notes`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({
-        id: note.id,
         task_id: taskId,
-        content: note.content
+        content: content
       })
     });
     if (!response.ok) throw new Error('Failed to create note');
@@ -176,7 +174,7 @@ export const api = {
     return data.url;
   },
 
-  updateNote: async (id: string, content: string): Promise<Note> => {
+  updateNote: async (id: number, content: string): Promise<Note> => {
     const response = await fetch(`${API_URL}/notes/${id}`, {
       method: 'PUT',
       headers: getHeaders(),
@@ -190,7 +188,7 @@ export const api = {
     };
   },
 
-  deleteNote: async (id: string): Promise<void> => {
+  deleteNote: async (id: number): Promise<void> => {
     const response = await fetch(`${API_URL}/notes/${id}`, {
       method: 'DELETE',
       headers: getHeaders()

@@ -1,11 +1,11 @@
 export interface Note {
-  id: string;
+  id: number;
   content: string;
   createdAt: number;
 }
 
 export interface Task {
-  id: string;
+  id: number;
   title: string;
   notes: Note[];
   completed: boolean;
@@ -17,7 +17,7 @@ export interface Task {
 }
 
 export interface TaskStat {
-  id: string;
-  taskTime: number;
-  completed: boolean;
+  date: string;
+  totalCount: number;
+  unCompletedCount: number;
 }

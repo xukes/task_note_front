@@ -46,11 +46,14 @@ export const Calendar: React.FC<CalendarProps> = ({ stats, selectedDate, onSelec
   const days = eachDayOfInterval({ start: startDate, end: endDate });
 
   const getDayStats = (date: Date) => {
-    const dayStats = stats.filter(stat => isSameDay(new Date(stat.taskTime), date));
+    const dateStr = format(date, 'yyyy-MM-dd');
+    const stat = stats.find(s => s.date === dateStr);
+    const total = stat?.totalCount || 0;
+    const unCompleted = stat?.unCompletedCount || 0;
     return {
-      total: dayStats.length,
-      completed: dayStats.filter(t => t.completed).length,
-      incomplete: dayStats.filter(t => !t.completed).length
+      total,
+      completed: total - unCompleted,
+      incomplete: unCompleted
     };
   };
 
