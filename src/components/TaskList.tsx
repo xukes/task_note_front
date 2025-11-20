@@ -56,6 +56,20 @@ export const TaskList: React.FC<TaskListProps> = ({ tasks, onToggle, onDelete, o
     setDraggedTaskId(null);
   };
 
+  const handleMoveUp = (index: number) => {
+    if (index === 0 || !onOrderChange) return;
+    const newTasks = [...tasks];
+    [newTasks[index - 1], newTasks[index]] = [newTasks[index], newTasks[index - 1]];
+    onOrderChange(newTasks);
+  };
+
+  const handleMoveDown = (index: number) => {
+    if (index === tasks.length - 1 || !onOrderChange) return;
+    const newTasks = [...tasks];
+    [newTasks[index], newTasks[index + 1]] = [newTasks[index + 1], newTasks[index]];
+    onOrderChange(newTasks);
+  };
+
   if (tasks.length === 0) {
     return (
       <div className="text-center py-10 text-gray-500">
@@ -66,11 +80,12 @@ export const TaskList: React.FC<TaskListProps> = ({ tasks, onToggle, onDelete, o
 
   return (
     <div className="space-y-2">
-      {tasks.map((task) => (
+      {tasks.map((task, index) => (
         <div
           key={task.id}
           draggable={!!onOrderChange}
           onDragStart={(e) => handleDragStart(e, task.id)}
+          onDragEnd={() => setDraggedTaskId(null)}
           onDragOver={handleDragOver}
           onDrop={(e) => handleDrop(e, task.id)}
           className={`transition-all duration-200 ${draggedTaskId === task.id ? 'opacity-50' : ''}`}
@@ -81,6 +96,10 @@ export const TaskList: React.FC<TaskListProps> = ({ tasks, onToggle, onDelete, o
             onDelete={onDelete}
             onUpdateTitle={onUpdateTitle}
             onClick={onTaskClick}
+            onMoveUp={onOrderChange ? () => handleMoveUp(index) : undefined}
+            onMoveDown={onOrderChange ? () => handleMoveDown(index) : undefined}
+            isFirst={index === 0}
+            isLast={index === tasks.length - 1}
           />
         </div>
       ))}

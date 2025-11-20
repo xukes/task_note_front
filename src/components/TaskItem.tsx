@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Task } from '../types';
-import { Check, Trash2, Square, Pencil, X, Save, MessageSquare } from 'lucide-react';
+import { Check, Trash2, Square, Pencil, X, Save, MessageSquare, ArrowUp, ArrowDown } from 'lucide-react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 
@@ -10,9 +10,23 @@ interface TaskItemProps {
   onDelete: (id: number) => void;
   onUpdateTitle: (id: number, title: string) => void;
   onClick: (task: Task) => void;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
+  isFirst?: boolean;
+  isLast?: boolean;
 }
 
-export const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, onUpdateTitle, onClick }) => {
+export const TaskItem: React.FC<TaskItemProps> = ({ 
+  task, 
+  onToggle, 
+  onDelete, 
+  onUpdateTitle, 
+  onClick,
+  onMoveUp,
+  onMoveDown,
+  isFirst,
+  isLast
+}) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(task.title);
 
@@ -103,6 +117,24 @@ export const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete, on
         </div>
       </div>
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        {onMoveUp && !isFirst && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onMoveUp(); }}
+            className="p-2 text-gray-400 hover:text-blue-600 rounded-full hover:bg-blue-50 transition-colors"
+            title="上移"
+          >
+            <ArrowUp size={18} />
+          </button>
+        )}
+        {onMoveDown && !isLast && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onMoveDown(); }}
+            className="p-2 text-gray-400 hover:text-blue-600 rounded-full hover:bg-blue-50 transition-colors"
+            title="下移"
+          >
+            <ArrowDown size={18} />
+          </button>
+        )}
         <button
           onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
           className="p-2 text-gray-400 hover:text-blue-600 rounded-full hover:bg-blue-50 transition-colors"
