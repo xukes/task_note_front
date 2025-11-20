@@ -3,12 +3,14 @@ import { X, Eye, Edit3, Columns, Save } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { api } from '../api';
 
 interface MarkdownEditorModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialValue: string;
   onSave: (content: string) => void;
+  initialMode?: 'edit' | 'split' | 'preview';
 }
 
 type EditorMode = 'edit' | 'split' | 'preview';
@@ -17,22 +19,64 @@ export const MarkdownEditorModal: React.FC<MarkdownEditorModalProps> = ({
   isOpen,
   onClose,
   initialValue,
-  onSave
+  onSave,
+  initialMode = 'split'
 }) => {
   const [content, setContent] = useState(initialValue);
-  const [mode, setMode] = useState<EditorMode>('split');
+  const [mode, setMode] = useState<EditorMode>(initialMode);
 
   useEffect(() => {
     if (isOpen) {
       setContent(initialValue);
+      setMode(initialMode);
     }
-  }, [isOpen, initialValue]);
+  }, [isOpen, initialValue, initialMode]);
 
   if (!isOpen) return null;
 
   const handleSave = () => {
     onSave(content);
     onClose();
+  };
+
+  const handlePaste = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = e.clipboardData.items;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        e.preventDefault();
+        const file = items[i].getAsFile();
+        if (file) {
+          // Capture cursor position and element BEFORE async operation
+          const textarea = e.currentTarget;
+          const start = textarea.selectionStart;
+          const end = textarea.selectionEnd;
+
+          try {
+            const url = await api.uploadImage(file);
+            const imageMarkdown = `\n![image](${url})\n`;
+            
+            setContent(prev => {
+                const before = prev.substring(0, start);
+                const after = prev.substring(end);
+                return before + imageMarkdown + after;
+            });
+            
+            // Restore cursor position
+            setTimeout(() => {
+                if (textarea && textarea.isConnected) {
+                    textarea.focus();
+                    textarea.selectionStart = textarea.selectionEnd = start + imageMarkdown.length;
+                }
+            }, 100);
+
+          } catch (error) {
+            console.error('Failed to upload pasted image:', error);
+            alert('图片上传失败');
+          }
+        }
+        break;
+      }
+    }
   };
 
   const MarkdownPreview = () => (
@@ -114,6 +158,7 @@ export const MarkdownEditorModal: React.FC<MarkdownEditorModalProps> = ({
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
+              onPaste={handlePaste}
               className="w-full h-full p-6 resize-none focus:outline-none font-mono text-sm leading-relaxed"
               placeholder="在此输入 Markdown 内容..."
               autoFocus
@@ -130,6 +175,7 @@ export const MarkdownEditorModal: React.FC<MarkdownEditorModalProps> = ({
                 <textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
+                  onPaste={handlePaste}
                   className="w-full h-full p-6 resize-none focus:outline-none font-mono text-sm leading-relaxed"
                   placeholder="在此输入 Markdown 内容..."
                   autoFocus

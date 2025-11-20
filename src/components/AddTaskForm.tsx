@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
-import { Plus, Image as ImageIcon } from 'lucide-react';
+import { Plus, Image as ImageIcon, Maximize2 } from 'lucide-react';
 import { api } from '../api';
+import { MarkdownEditorModal } from './MarkdownEditorModal';
 
 interface AddTaskFormProps {
   onAdd: (title: string, note: string) => void;
@@ -10,6 +11,7 @@ export const AddTaskForm: React.FC<AddTaskFormProps> = ({ onAdd }) => {
   const [title, setTitle] = useState('');
   const [note, setNote] = useState('');
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isMarkdownEditorOpen, setIsMarkdownEditorOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -85,7 +87,7 @@ export const AddTaskForm: React.FC<AddTaskFormProps> = ({ onAdd }) => {
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y"
           />
           <div className="flex justify-between items-center">
-            <div>
+            <div className="flex gap-1">
               <input
                 type="file"
                 ref={fileInputRef}
@@ -100,6 +102,14 @@ export const AddTaskForm: React.FC<AddTaskFormProps> = ({ onAdd }) => {
                 title="上传图片"
               >
                 <ImageIcon size={20} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsMarkdownEditorOpen(true)}
+                className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                title="全屏编辑 (Markdown)"
+              >
+                <Maximize2 size={20} />
               </button>
             </div>
             <div className="flex gap-2">
@@ -122,6 +132,13 @@ export const AddTaskForm: React.FC<AddTaskFormProps> = ({ onAdd }) => {
           </div>
         </div>
       )}
+
+      <MarkdownEditorModal
+        isOpen={isMarkdownEditorOpen}
+        onClose={() => setIsMarkdownEditorOpen(false)}
+        initialValue={note}
+        onSave={(content) => setNote(content)}
+      />
     </form>
   );
 };

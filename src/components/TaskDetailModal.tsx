@@ -420,6 +420,7 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
           isOpen={!!fullScreenNote}
           onClose={() => setFullScreenNote(null)}
           initialValue={fullScreenNote?.content || ''}
+          initialMode="preview"
           onSave={(content) => {
             if (fullScreenNote) {
               onUpdateNote(task.id, fullScreenNote.id, content);
