@@ -4,9 +4,10 @@ import { User, Lock, LogIn, ShieldCheck } from 'lucide-react';
 interface LoginPageProps {
   onLogin: (token: string, username: string) => void;
   onSwitchToRegister: () => void;
+  onSwitchToResetPassword: () => void;
 }
 
-export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onSwitchToRegister }) => {
+export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onSwitchToRegister, onSwitchToResetPassword }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [totpToken, setTotpToken] = useState('');
@@ -96,7 +97,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onSwitchToRegiste
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">密码</label>
+                <div className="flex justify-between items-center">
+                  <label className="text-sm font-medium text-gray-700">密码</label>
+                  <button
+                    type="button"
+                    onClick={onSwitchToResetPassword}
+                    className="text-xs text-blue-600 hover:text-blue-800 hover:underline"
+                  >
+                    忘记密码？
+                  </button>
+                </div>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                   <input

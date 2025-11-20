@@ -12,12 +12,14 @@ import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, startOfDay, endOfDay 
 import { zhCN } from 'date-fns/locale';
 import { LoginPage } from './components/LoginPage';
 import { RegisterPage } from './components/RegisterPage';
+import { ResetPasswordPage } from './components/ResetPasswordPage';
 import { api } from './api';
 
 function App() {
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [username, setUsername] = useState<string | null>(localStorage.getItem('username'));
   const [isRegistering, setIsRegistering] = useState(false);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [is2FAModalOpen, setIs2FAModalOpen] = useState(false);
 
   const [monthlyStats, setMonthlyStats] = useState<TaskStat[]>([]);
@@ -311,10 +313,19 @@ function App() {
         />
       );
     }
+    if (isResettingPassword) {
+      return (
+        <ResetPasswordPage
+          onSuccess={() => setIsResettingPassword(false)}
+          onBackToLogin={() => setIsResettingPassword(false)}
+        />
+      );
+    }
     return (
       <LoginPage 
         onLogin={handleLogin} 
         onSwitchToRegister={() => setIsRegistering(true)} 
+        onSwitchToResetPassword={() => setIsResettingPassword(true)}
       />
     );
   }
