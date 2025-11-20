@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { X, ShieldCheck, Mail, Twitter, ChevronRight, ArrowLeft, Copy, Check } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 
@@ -11,9 +11,8 @@ interface UserProfileModalProps {
 export function UserProfileModal({ isOpen, onClose, username }: UserProfileModalProps) {
   const [activeTab, setActiveTab] = useState<'list' | 'totp'>('list');
   const [totpEnabled, setTotpEnabled] = useState(false);
-  const [loading, setLoading] = useState(false);
 
-  // TOTP State
+  // TOTP 状态
   const [secret, setSecret] = useState('');
   const [qrUrl, setQrUrl] = useState('');
   const [token, setToken] = useState('');
@@ -29,6 +28,7 @@ export function UserProfileModal({ isOpen, onClose, username }: UserProfileModal
     }
   }, [isOpen]);
 
+  // 关闭时重置状态
   const resetTotpState = () => {
     setSecret('');
     setQrUrl('');
@@ -38,10 +38,9 @@ export function UserProfileModal({ isOpen, onClose, username }: UserProfileModal
   };
 
   const checkStatus = async () => {
-    setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/auth/totp/status', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/totp/status`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
@@ -50,15 +49,13 @@ export function UserProfileModal({ isOpen, onClose, username }: UserProfileModal
       }
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
   const generateSecret = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/auth/totp/generate', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/totp/generate`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -78,7 +75,7 @@ export function UserProfileModal({ isOpen, onClose, username }: UserProfileModal
   const handleVerify = async () => {
     try {
       const authToken = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/auth/totp/verify', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/totp/verify`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${authToken}`,

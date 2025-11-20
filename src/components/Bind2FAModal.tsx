@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Copy, Check } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 
@@ -35,7 +35,7 @@ export function Bind2FAModal({ isOpen, onClose }: Bind2FAModalProps) {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/auth/totp/status', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/totp/status`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
@@ -56,7 +56,7 @@ export function Bind2FAModal({ isOpen, onClose }: Bind2FAModalProps) {
   const generateSecret = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/auth/totp/generate', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/totp/generate`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -76,7 +76,7 @@ export function Bind2FAModal({ isOpen, onClose }: Bind2FAModalProps) {
   const handleVerify = async () => {
     try {
       const authToken = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/auth/totp/verify', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/totp/verify`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${authToken}`,
