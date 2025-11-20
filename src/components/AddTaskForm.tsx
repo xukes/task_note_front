@@ -13,14 +13,44 @@ export const AddTaskForm: React.FC<AddTaskFormProps> = ({ onAdd }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMarkdownEditorOpen, setIsMarkdownEditorOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const noteInputRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const submitTask = () => {
     if (title.trim()) {
       onAdd(title.trim(), note.trim());
       setTitle('');
       setNote('');
       setIsExpanded(false);
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    submitTask();
+  };
+
+  const handleTitleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        submitTask();
+      } else {
+        e.preventDefault();
+        setIsExpanded(true);
+        // Need to wait for render if not expanded yet, but here we set expanded true.
+        // However, if it wasn't expanded, the textarea isn't in DOM yet.
+        // We can use setTimeout to focus after render.
+        setTimeout(() => {
+          noteInputRef.current?.focus();
+        }, 0);
+      }
+    }
+  };
+
+  const handleNoteKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      submitTask();
     }
   };
 
@@ -71,6 +101,7 @@ export const AddTaskForm: React.FC<AddTaskFormProps> = ({ onAdd }) => {
           value={title}
           onFocus={() => setIsExpanded(true)}
           onChange={(e) => setTitle(e.target.value)}
+          onKeyDown={handleTitleKeyDown}
           placeholder="添加新任务..."
           className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
@@ -79,9 +110,11 @@ export const AddTaskForm: React.FC<AddTaskFormProps> = ({ onAdd }) => {
       {isExpanded && (
         <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
           <textarea
+            ref={noteInputRef}
             value={note}
             onChange={(e) => setNote(e.target.value)}
             onPaste={handlePaste}
+            onKeyDown={handleNoteKeyDown}
             placeholder="添加备注 (可选，支持粘贴图片)..."
             rows={3}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y"

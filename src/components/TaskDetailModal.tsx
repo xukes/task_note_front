@@ -295,6 +295,12 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                         <textarea
                           value={editNoteContent}
                           onChange={(e) => setEditNoteContent(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                              e.preventDefault();
+                              saveNoteEdit(note.id);
+                            }
+                          }}
                           className="w-full p-2 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"
                           rows={3}
                           autoFocus
@@ -390,7 +396,7 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
               className="w-full pl-4 pr-20 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y shadow-sm"
               rows={3}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
+                if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
                   e.preventDefault();
                   handleAddNote(e);
                 }
