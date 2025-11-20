@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Lock, LogIn } from 'lucide-react';
+import { User, Lock, LogIn, ShieldCheck } from 'lucide-react';
 
 interface LoginPageProps {
   onLogin: (token: string, username: string) => void;
@@ -9,6 +9,8 @@ interface LoginPageProps {
 export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onSwitchToRegister }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [totpToken, setTotpToken] = useState('');
+  const [show2FA, setShow2FA] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -23,13 +25,23 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onSwitchToRegiste
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ 
+          username, 
+          password,
+          totp_token: show2FA ? totpToken : undefined
+        }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
         throw new Error(data.error || 'Login failed');
+      }
+
+      if (data.require_2fa) {
+        setShow2FA(true);
+        setIsLoading(false);
+        return;
       }
 
       onLogin(data.token, data.username);
@@ -45,10 +57,18 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onSwitchToRegiste
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 animate-in fade-in zoom-in-95 duration-300">
         <div className="text-center mb-8">
           <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-            <User className="text-blue-600" size={32} />
+            {show2FA ? (
+              <ShieldCheck className="text-blue-600" size={32} />
+            ) : (
+              <User className="text-blue-600" size={32} />
+            )}
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">欢迎回来</h1>
-          <p className="text-gray-500 mt-2">请登录您的账号以继续</p>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {show2FA ? 'Two-Factor Authentication' : 'Welcome Back'}
+          </h1>
+          <p className="text-gray-500 mt-2">
+            {show2FA ? 'Please enter the code from your authenticator app' : 'Please sign in to continue'}
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -58,35 +78,56 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onSwitchToRegiste
             </div>
           )}
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">用户名</label>
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="请输入用户名"
-                required
-              />
-            </div>
-          </div>
+          {!show2FA ? (
+            <>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Username</label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    placeholder="Enter your username"
+                    required
+                  />
+                </div>
+              </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">密码</label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="请输入密码"
-                required
-              />
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    placeholder="Enter your password"
+                    required
+                  />
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Verification Code</label>
+              <div className="relative">
+                <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                <input
+                  type="text"
+                  value={totpToken}
+                  onChange={(e) => setTotpToken(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-center text-xl tracking-widest"
+                  placeholder="000000"
+                  maxLength={6}
+                  required
+                  autoFocus
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           <button
             type="submit"
@@ -94,25 +135,39 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onSwitchToRegiste
             className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {isLoading ? (
-              '登录中...'
+              'Verifying...'
             ) : (
               <>
-                <LogIn size={20} />
-                登录
+                {show2FA ? <ShieldCheck size={20} /> : <LogIn size={20} />}
+                {show2FA ? 'Verify' : 'Sign In'}
               </>
             )}
           </button>
 
-          <div className="text-center mt-4">
-            <span className="text-sm text-gray-600">还没有账号？</span>
-            <button
-              type="button"
-              onClick={onSwitchToRegister}
-              className="ml-1 text-sm text-blue-600 hover:text-blue-800 font-medium hover:underline"
-            >
-              立即注册
-            </button>
-          </div>
+          {!show2FA && (
+            <div className="text-center mt-4">
+              <span className="text-sm text-gray-600">Don't have an account?</span>
+              <button
+                type="button"
+                onClick={onSwitchToRegister}
+                className="ml-1 text-sm text-blue-600 hover:text-blue-800 font-medium hover:underline"
+              >
+                Sign up
+              </button>
+            </div>
+          )}
+          
+          {show2FA && (
+             <div className="text-center text-sm text-gray-500">
+              <button
+                type="button"
+                onClick={() => { setShow2FA(false); setTotpToken(''); setError(''); }}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                Back to Login
+              </button>
+            </div>
+          )}
         </form>
       </div>
     </div>

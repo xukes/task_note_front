@@ -6,7 +6,8 @@ import { DailyStats } from './components/DailyStats';
 import { Calendar } from './components/Calendar';
 import { SidebarTaskList } from './components/SidebarTaskList';
 import { TaskDetailModal } from './components/TaskDetailModal';
-import { LayoutList, LogOut } from 'lucide-react';
+import { UserProfileModal } from './components/UserProfileModal';
+import { LayoutList, LogOut, User } from 'lucide-react';
 import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, startOfDay, endOfDay } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import { LoginPage } from './components/LoginPage';
@@ -17,6 +18,7 @@ function App() {
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [username, setUsername] = useState<string | null>(localStorage.getItem('username'));
   const [isRegistering, setIsRegistering] = useState(false);
+  const [is2FAModalOpen, setIs2FAModalOpen] = useState(false);
 
   const [monthlyStats, setMonthlyStats] = useState<TaskStat[]>([]);
   const [todayTasks, setTodayTasks] = useState<Task[]>([]);
@@ -326,6 +328,13 @@ function App() {
          </div>
          <div className="flex items-center gap-4">
             <span className="text-gray-600">你好, {username}</span>
+            <button 
+              onClick={() => setIs2FAModalOpen(true)}
+              className="flex items-center gap-1 text-gray-500 hover:text-blue-600 transition-colors"
+              title="User Profile"
+            >
+              <User size={18} />
+            </button>
             <button onClick={handleLogout} className="flex items-center gap-1 text-gray-500 hover:text-red-600 transition-colors">
               <LogOut size={18} />
               退出
@@ -392,6 +401,12 @@ function App() {
           onUpdateNote={updateNote}
         />
       )}
+
+      <UserProfileModal 
+        isOpen={is2FAModalOpen} 
+        onClose={() => setIs2FAModalOpen(false)}
+        username={username}
+      />
     </div>
   );
 }
