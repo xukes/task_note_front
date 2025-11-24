@@ -5,7 +5,7 @@ import { TaskList } from './components/TaskList';
 import { DailyStats } from './components/DailyStats';
 import { Calendar } from './components/Calendar';
 import { SidebarTaskList } from './components/SidebarTaskList';
-import { TaskDetailModal } from './components/TaskDetailModal';
+import { TaskDetailView } from './components/TaskDetailView'; // 引入新组件
 import { UserProfileModal } from './components/UserProfileModal';
 import { LayoutList, LogOut, User } from 'lucide-react';
 import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, startOfDay, endOfDay } from 'date-fns';
@@ -405,46 +405,47 @@ function App() {
         </div>
 
         {/* Main Content (Center) */}
-        <div className="bg-white rounded-xl shadow-md overflow-hidden h-fit">
-          <div className="p-6 bg-blue-600 text-white">
-            <div className="flex items-center gap-3 mb-2">
-              <LayoutList size={32} />
-              <h1 className="text-2xl font-bold">今日专注</h1>
-            </div>
-            <p className="text-blue-100">
-              今天还有 {activeTasksCount} 个待办任务
-            </p>
-          </div>
-          
-          <div className="p-6">
-            <SearchBox onTaskClick={setSelectedTask} />
-            <DailyStats tasks={todayTasks} />
-            <AddTaskForm onAdd={addTask} />
-            <TaskList 
-              tasks={todayTasks} 
-              onToggle={toggleTask} 
-              onDelete={deleteTask} 
+        <div className="bg-white rounded-xl shadow-md overflow-hidden h-fit min-h-[600px]">
+          {selectedTask ? (
+            <TaskDetailView
+              task={selectedTask}
+              onClose={() => setSelectedTask(null)}
+              onAddNote={addNoteToTask}
               onUpdateTitle={updateTaskTitle}
-              onTaskClick={setSelectedTask}
-              onOrderChange={handleOrderChange}
+              onUpdateTask={updateTask}
+              onDeleteTask={deleteTask}
+              onDeleteNote={deleteNote}
+              onUpdateNote={updateNote}
             />
-          </div>
+          ) : (
+            <>
+              <div className="p-6 bg-blue-600 text-white">
+                <div className="flex items-center gap-3 mb-2">
+                  <LayoutList size={32} />
+                  <h1 className="text-2xl font-bold">今日专注</h1>
+                </div>
+                <p className="text-blue-100">
+                  今天还有 {activeTasksCount} 个待办任务
+                </p>
+              </div>
+              
+              <div className="p-6">
+                <SearchBox onTaskClick={setSelectedTask} />
+                <DailyStats tasks={todayTasks} />
+                <AddTaskForm onAdd={addTask} />
+                <TaskList 
+                  tasks={todayTasks} 
+                  onToggle={toggleTask} 
+                  onDelete={deleteTask} 
+                  onUpdateTitle={updateTaskTitle}
+                  onTaskClick={setSelectedTask}
+                  onOrderChange={handleOrderChange}
+                />
+              </div>
+            </>
+          )}
         </div>
-
       </div>
-
-      {/* Task Detail Modal */}
-      {selectedTask && (
-        <TaskDetailModal
-          task={selectedTask}
-          onClose={() => setSelectedTask(null)}
-          onAddNote={addNoteToTask}
-          onUpdateTitle={updateTaskTitle}
-          onUpdateTask={updateTask}
-          onDeleteNote={deleteNote}
-          onUpdateNote={updateNote}
-        />
-      )}
 
       <UserProfileModal 
         isOpen={is2FAModalOpen} 
