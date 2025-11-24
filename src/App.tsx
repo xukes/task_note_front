@@ -15,6 +15,7 @@ import { RegisterPage } from './components/RegisterPage';
 import { ResetPasswordPage } from './components/ResetPasswordPage';
 import { SearchBox } from './components/SearchBox';
 import { api } from './api';
+import { NoteEditView } from './components/NoteEditView'; // 引入新组件
 
 function App() {
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
@@ -30,6 +31,9 @@ function App() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [viewMonth, setViewMonth] = useState(new Date());
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  
+  // 新增状态：当前正在编辑的笔记
+  const [editingNote, setEditingNote] = useState<{ noteId: number; content: string } | null>(null);
 
   const handleLogin = (newToken: string, newUsername: string) => {
     localStorage.setItem('token', newToken);
@@ -335,6 +339,63 @@ function App() {
 
   const activeTasksCount = todayTasks.filter(t => !t.completed).length;
 
+  // 处理笔记更新
+  const handleUpdateNoteContent = async (content: string) => {
+    if (selectedTask && editingNote) {
+      await updateNote(selectedTask.id, editingNote.noteId, content);
+      setEditingNote(null); // 保存后退出编辑视图
+    }
+  };
+
+  // 渲染主内容区域
+  const renderMainContent = () => {
+    // 1. 如果选中了任务，显示任务详情
+    if (selectedTask) {
+      return (
+        <TaskDetailView
+          task={selectedTask}
+          onClose={() => setSelectedTask(null)}
+          onAddNote={addNoteToTask}
+          onUpdateTitle={updateTaskTitle}
+          onUpdateTask={updateTask}
+          onDeleteTask={deleteTask}
+          onDeleteNote={deleteNote}
+          onUpdateNote={updateNote}
+          onEditNote={(note) => setEditingNote({ noteId: note.id, content: note.content })}
+        />
+      );
+    }
+
+    // 2. 默认显示仪表盘
+    return (
+      <>
+        <div className="p-6 bg-blue-600 text-white">
+          <div className="flex items-center gap-3 mb-2">
+            <LayoutList size={32} />
+            <h1 className="text-2xl font-bold">今日专注</h1>
+          </div>
+          <p className="text-blue-100">
+            今天还有 {activeTasksCount} 个待办任务
+          </p>
+        </div>
+        
+        <div className="p-6">
+          <SearchBox onTaskClick={setSelectedTask} />
+          <DailyStats tasks={todayTasks} />
+          <AddTaskForm onAdd={addTask} />
+          <TaskList 
+            tasks={todayTasks} 
+            onToggle={toggleTask} 
+            onDelete={deleteTask} 
+            onUpdateTitle={updateTaskTitle}
+            onTaskClick={setSelectedTask}
+            onOrderChange={handleOrderChange}
+          />
+        </div>
+      </>
+    );
+  };
+
   if (!token) {
     if (isRegistering) {
       return (
@@ -362,7 +423,18 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8 px-4">
+    <div className="min-h-screen bg-gray-100 py-8 px-4 relative">
+      {/* 全屏笔记编辑器 */}
+      {selectedTask && editingNote && (
+        <div className="fixed inset-0 z-50 bg-gray-100 p-4">
+          <NoteEditView
+            initialContent={editingNote.content}
+            onSave={handleUpdateNoteContent}
+            onBack={() => setEditingNote(null)}
+          />
+        </div>
+      )}
+
       <div className="max-w-6xl mx-auto mb-6 flex justify-between items-center">
          <div className="flex items-center gap-2">
             <LayoutList className="text-blue-600" />
@@ -406,44 +478,7 @@ function App() {
 
         {/* Main Content (Center) */}
         <div className="bg-white rounded-xl shadow-md overflow-hidden h-fit min-h-[600px]">
-          {selectedTask ? (
-            <TaskDetailView
-              task={selectedTask}
-              onClose={() => setSelectedTask(null)}
-              onAddNote={addNoteToTask}
-              onUpdateTitle={updateTaskTitle}
-              onUpdateTask={updateTask}
-              onDeleteTask={deleteTask}
-              onDeleteNote={deleteNote}
-              onUpdateNote={updateNote}
-            />
-          ) : (
-            <>
-              <div className="p-6 bg-blue-600 text-white">
-                <div className="flex items-center gap-3 mb-2">
-                  <LayoutList size={32} />
-                  <h1 className="text-2xl font-bold">今日专注</h1>
-                </div>
-                <p className="text-blue-100">
-                  今天还有 {activeTasksCount} 个待办任务
-                </p>
-              </div>
-              
-              <div className="p-6">
-                <SearchBox onTaskClick={setSelectedTask} />
-                <DailyStats tasks={todayTasks} />
-                <AddTaskForm onAdd={addTask} />
-                <TaskList 
-                  tasks={todayTasks} 
-                  onToggle={toggleTask} 
-                  onDelete={deleteTask} 
-                  onUpdateTitle={updateTaskTitle}
-                  onTaskClick={setSelectedTask}
-                  onOrderChange={handleOrderChange}
-                />
-              </div>
-            </>
-          )}
+          {renderMainContent()}
         </div>
       </div>
 
