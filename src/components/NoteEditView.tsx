@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Save, Columns, Eye, Edit3 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import type { PluggableList } from 'unified';
 import { api } from '../api';
 
 interface NoteEditViewProps {
@@ -149,7 +153,28 @@ export function NoteEditView({ initialContent, onSave, onBack }: NoteEditViewPro
         {/* 预览区 */}
         {(mode === 'preview' || mode === 'split') && (
           <div className={`h-full overflow-y-auto p-8 prose prose-blue max-w-none ${mode === 'split' ? 'w-1/2 bg-gray-50' : 'w-full'}`}>
-            <ReactMarkdown>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm] as PluggableList}
+              components={{
+                code(props) {
+                  const {children, className, node, ref, ...rest} = props
+                  const match = /language-(\w+)/.exec(className || '')
+                  return match ? (
+                    <SyntaxHighlighter
+                      {...rest}
+                      PreTag="div"
+                      children={String(children).replace(/\n$/, '')}
+                      language={match[1]}
+                      style={vscDarkPlus}
+                    />
+                  ) : (
+                    <code {...rest} className={className}>
+                      {children}
+                    </code>
+                  )
+                }
+              }}
+            >
               {content || '*暂无内容*'}
             </ReactMarkdown>
           </div>

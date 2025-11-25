@@ -5,6 +5,8 @@ import { format,isSameDay } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import type { PluggableList } from 'unified';
 
 interface TaskDetailViewProps {
@@ -243,8 +245,31 @@ export function TaskDetailView({
                   </button>
                 </div>
               </div>
-              <div className="prose prose-sm max-w-none text-gray-600 overflow-wrap-anywhere whitespace-pre-wrap">
-                <ReactMarkdown remarkPlugins={[remarkGfm] as PluggableList}>{note.content}</ReactMarkdown>
+              <div className="prose prose-sm max-w-none text-gray-600">
+                <ReactMarkdown 
+                  remarkPlugins={[remarkGfm] as PluggableList}
+                  components={{
+                    code(props) {
+                      const {children, className, node, ref, ...rest} = props
+                      const match = /language-(\w+)/.exec(className || '')
+                      return match ? (
+                        <SyntaxHighlighter
+                          {...rest}
+                          PreTag="div"
+                          children={String(children).replace(/\n$/, '')}
+                          language={match[1]}
+                          style={vscDarkPlus}
+                        />
+                      ) : (
+                        <code {...rest} className={className}>
+                          {children}
+                        </code>
+                      )
+                    }
+                  }}
+                >
+                  {note.content}
+                </ReactMarkdown>
               </div>
             </div>
           ))}
