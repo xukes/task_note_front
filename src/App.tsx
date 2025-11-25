@@ -32,8 +32,11 @@ function App() {
   const [viewMonth, setViewMonth] = useState(new Date());
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   
-  // 新增状态：当前正在编辑的笔记
-  const [editingNote, setEditingNote] = useState<{ noteId: number; content: string } | null>(null);
+  // 全屏编辑器状态
+  const [fullScreenEditor, setFullScreenEditor] = useState<{
+    initialContent: string;
+    onSave: (content: string) => Promise<void> | void;
+  } | null>(null);
 
   const handleLogin = (newToken: string, newUsername: string) => {
     localStorage.setItem('token', newToken);
@@ -339,14 +342,6 @@ function App() {
 
   const activeTasksCount = todayTasks.filter(t => !t.completed).length;
 
-  // 处理笔记更新
-  const handleUpdateNoteContent = async (content: string) => {
-    if (selectedTask && editingNote) {
-      await updateNote(selectedTask.id, editingNote.noteId, content);
-      setEditingNote(null); // 保存后退出编辑视图
-    }
-  };
-
   // 渲染主内容区域
   const renderMainContent = () => {
     // 1. 如果选中了任务，显示任务详情
@@ -361,7 +356,9 @@ function App() {
           onDeleteTask={deleteTask}
           onDeleteNote={deleteNote}
           onUpdateNote={updateNote}
-          onEditNote={(note) => setEditingNote({ noteId: note.id, content: note.content })}
+          onOpenNoteEditor={(initialValue, onSave) => {
+            setFullScreenEditor({ initialContent: initialValue, onSave });
+          }}
         />
       );
     }
@@ -425,12 +422,12 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-100 py-8 px-4 relative">
       {/* 全屏笔记编辑器 */}
-      {selectedTask && editingNote && (
+      {fullScreenEditor && (
         <div className="fixed inset-0 z-50 bg-gray-100 p-4">
           <NoteEditView
-            initialContent={editingNote.content}
-            onSave={handleUpdateNoteContent}
-            onBack={() => setEditingNote(null)}
+            initialContent={fullScreenEditor.initialContent}
+            onSave={fullScreenEditor.onSave}
+            onBack={() => setFullScreenEditor(null)}
           />
         </div>
       )}

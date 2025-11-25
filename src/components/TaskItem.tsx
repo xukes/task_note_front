@@ -30,18 +30,30 @@ export const TaskItem: React.FC<TaskItemProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(task.title);
 
-  const handleSave = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const commitEdit = () => {
     if (editTitle.trim()) {
       onUpdateTitle(task.id, editTitle.trim());
       setIsEditing(false);
     }
   };
 
+  const handleSave = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    commitEdit();
+  };
+
   const handleCancel = (e: React.MouseEvent) => {
     e.stopPropagation();
     setEditTitle(task.title);
     setIsEditing(false);
+  };
+
+  const handleEditKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.stopPropagation();
+      e.preventDefault();
+      commitEdit();
+    }
   };
 
   const formatDate = (timestamp: number) => {
@@ -58,10 +70,11 @@ export const TaskItem: React.FC<TaskItemProps> = ({
   if (isEditing) {
     return (
       <div className="p-4 mb-2 bg-white rounded-lg shadow-sm border border-blue-200 ring-2 ring-blue-100">
-        <input
+          <input
           type="text"
           value={editTitle}
           onChange={(e) => setEditTitle(e.target.value)}
+            onKeyDown={handleEditKeyDown}
           className="w-full mb-2 px-2 py-1 text-lg font-medium border-b border-gray-200 focus:outline-none focus:border-blue-500"
           placeholder="任务标题"
           autoFocus

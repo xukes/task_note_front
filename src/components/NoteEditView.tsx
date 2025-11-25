@@ -5,13 +5,14 @@ import { api } from '../api';
 
 interface NoteEditViewProps {
   initialContent: string;
-  onSave: (content: string) => void;
+  onSave: (content: string) => Promise<void> | void;
   onBack: () => void;
 }
 
 export function NoteEditView({ initialContent, onSave, onBack }: NoteEditViewProps) {
   const [content, setContent] = useState(initialContent);
   const [mode, setMode] = useState<'edit' | 'split' | 'preview'>('split');
+  const [isSaving, setIsSaving] = useState(false);
 
   // 监听 ESC 键返回
   useEffect(() => {
@@ -55,9 +56,25 @@ export function NoteEditView({ initialContent, onSave, onBack }: NoteEditViewPro
     }
   };
 
-  const handleSave = () => {
-    onSave(content);
-    onBack();
+  const handleSave = async () => {
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      await Promise.resolve(onSave(content));
+      onBack();
+    } catch (error) {
+      console.error('保存笔记失败：', error);
+      alert('保存笔记失败，请稍后重试');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleTextareaKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      handleSave();
+    }
   };
 
   return (
@@ -105,10 +122,11 @@ export function NoteEditView({ initialContent, onSave, onBack }: NoteEditViewPro
         </div>
         <button
           onClick={handleSave}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          disabled={isSaving}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-60 disabled:cursor-wait"
         >
           <Save className="w-4 h-4" />
-          保存更改
+          {isSaving ? '保存中…' : '保存更改'}
         </button>
       </div>
 
@@ -121,6 +139,7 @@ export function NoteEditView({ initialContent, onSave, onBack }: NoteEditViewPro
               value={content}
               onChange={(e) => setContent(e.target.value)}
               onPaste={handlePaste}
+              onKeyDown={handleTextareaKeyDown}
               className="w-full h-full resize-none border-none focus:ring-0 p-0 text-gray-700 font-mono leading-relaxed bg-transparent outline-none"
               placeholder="在此输入 Markdown 内容..."
             />
