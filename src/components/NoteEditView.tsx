@@ -18,17 +18,6 @@ export function NoteEditView({ initialContent, onSave, onBack }: NoteEditViewPro
   const [mode, setMode] = useState<'edit' | 'split' | 'preview'>('split');
   const [isSaving, setIsSaving] = useState(false);
 
-  // 监听 ESC 键返回
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onBack();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onBack]);
-
   const handlePaste = async (e: React.ClipboardEvent) => {
     const items = e.clipboardData.items;
     for (let i = 0; i < items.length; i++) {
@@ -73,6 +62,22 @@ export function NoteEditView({ initialContent, onSave, onBack }: NoteEditViewPro
       setIsSaving(false);
     }
   };
+
+  // 监听全局快捷键
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onBack();
+      }
+      // Ctrl+Enter 保存 (无论焦点在哪里)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        handleSave();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onBack, handleSave]);
 
   const handleTextareaKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {

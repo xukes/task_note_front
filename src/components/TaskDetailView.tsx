@@ -8,6 +8,7 @@ import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import type { PluggableList } from 'unified';
+import { api } from '../api';
 
 interface TaskDetailViewProps {
   task: Task;
@@ -98,19 +99,22 @@ export function TaskDetailView({
     }`;
   };
 
-  const handlePaste = (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
+  const handlePaste = async (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
     const items = event.clipboardData.items;
     for (let i = 0; i < items.length; i++) {
       if (items[i].type.includes('image')) {
         event.preventDefault();
         const file = items[i].getAsFile();
         if (!file) return;
-        const reader = new FileReader();
-        reader.onload = () => {
-          const imageMarkdown = `![image](${reader.result})`;
+        
+        try {
+          const url = await api.uploadImage(file);
+          const imageMarkdown = `![image](${url})`;
           setNewNoteContent((prev) => prev + imageMarkdown);
-        };
-        reader.readAsDataURL(file);
+        } catch (error) {
+          console.error('Failed to upload image:', error);
+          // Fallback or error notification could go here
+        }
         break;
       }
     }
