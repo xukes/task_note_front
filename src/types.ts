@@ -2,6 +2,10 @@ export interface Note {
   id: number;
   content: string;
   createdAt: number;
+  noteType?: 'task' | 'note';
+  label?: string;
+  sort?: number;
+  taskId?: number;
 }
 
 export interface Task {

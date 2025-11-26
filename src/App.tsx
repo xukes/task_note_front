@@ -15,7 +15,8 @@ import { RegisterPage } from './components/RegisterPage';
 import { ResetPasswordPage } from './components/ResetPasswordPage';
 import { SearchBox } from './components/SearchBox';
 import { api } from './api';
-import { NoteEditView } from './components/NoteEditView'; // 引入新组件
+import { NoteEditView } from './components/NoteEditView';
+import { IndependentNotesView } from './components/IndependentNotesView';
 
 function App() {
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
@@ -23,6 +24,7 @@ function App() {
   const [isRegistering, setIsRegistering] = useState(false);
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [is2FAModalOpen, setIs2FAModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'tasks' | 'notes'>('tasks');
 
   const [monthlyStats, setMonthlyStats] = useState<TaskStat[]>([]);
   const [todayTasks, setTodayTasks] = useState<Task[]>([]);
@@ -433,9 +435,35 @@ function App() {
       )}
 
       <div className="max-w-6xl mx-auto mb-6 flex justify-between items-center">
-         <div className="flex items-center gap-2">
-            <LayoutList className="text-blue-600" />
-            <h1 className="text-2xl font-bold text-gray-800">TaskNote</h1>
+         <div className="flex items-center gap-4">
+            {/* <div className="flex items-center gap-2">
+                <LayoutList className="text-blue-600" />
+                <h1 className="text-2xl font-bold text-gray-800">TaskNote</h1>
+            </div> */}
+            
+            <div className="flex bg-gray-200 rounded-lg p-1 ml-8">
+              <div className="flex items-center gap-2">
+                
+                <button
+                    onClick={() => setActiveTab('tasks')}
+                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+                        activeTab === 'tasks' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-800'
+                    }`}
+                >
+                    任务
+                </button>
+                </div>
+                        <div className="flex items-center gap-2">
+                <button
+                    onClick={() => setActiveTab('notes')}
+                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+                        activeTab === 'notes' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-800'
+                    }`}
+                >
+                    笔记
+                </button>
+                </div>
+            </div>
          </div>
          <div className="flex items-center gap-4">
             <span className="text-gray-600">你好, {username}</span>
@@ -455,28 +483,40 @@ function App() {
 
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
         
-        {/* Left Sidebar */}
-        <div className="space-y-6">
-          <Calendar 
-            stats={monthlyStats} 
-            selectedDate={selectedDate} 
-            onSelectDate={setSelectedDate}
-            onMonthChange={setViewMonth}
-          />
-          <SidebarTaskList 
-            date={selectedDate}
-            tasks={selectedDateTasks}
-            onToggle={toggleTask}
-            onDelete={deleteTask}
-            onUpdateTitle={updateTaskTitle}
-            onTaskClick={setSelectedTask}
-          />
-        </div>
+        {activeTab === 'tasks' ? (
+            <>
+                {/* Left Sidebar */}
+                <div className="space-y-6">
+                  <Calendar 
+                    stats={monthlyStats} 
+                    selectedDate={selectedDate} 
+                    onSelectDate={setSelectedDate}
+                    onMonthChange={setViewMonth}
+                  />
+                  <SidebarTaskList 
+                    date={selectedDate}
+                    tasks={selectedDateTasks}
+                    onToggle={toggleTask}
+                    onDelete={deleteTask}
+                    onUpdateTitle={updateTaskTitle}
+                    onTaskClick={setSelectedTask}
+                  />
+                </div>
 
-        {/* Main Content (Center) */}
-        <div className="bg-white rounded-xl shadow-md overflow-hidden h-fit min-h-[600px]">
-          {renderMainContent()}
-        </div>
+                {/* Main Content (Center) */}
+                <div className="bg-white rounded-xl shadow-md overflow-hidden h-fit min-h-[600px]">
+                  {renderMainContent()}
+                </div>
+            </>
+        ) : (
+            <div className="col-span-1 lg:col-span-2 h-[calc(100vh-100px)]">
+                <IndependentNotesView 
+                    onOpenNoteEditor={(initialValue, onSave) => {
+                        setFullScreenEditor({ initialContent: initialValue, onSave });
+                    }}
+                />
+            </div>
+        )}
       </div>
 
       <UserProfileModal 

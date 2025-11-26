@@ -144,13 +144,15 @@ export const api = {
     if (!response.ok) throw new Error('Failed to delete task');
   },
 
-  createNote: async (taskId: number, content: string): Promise<Note> => {
+  createNote: async (taskId: number, content: string, noteType: 'task' | 'note' = 'task', label: string = ''): Promise<Note> => {
     const response = await fetch(`${API_URL}/notes`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({
         task_id: taskId,
-        content: content
+        content: content,
+        note_type: noteType,
+        label: label
       })
     });
     if (!response.ok) throw new Error('Failed to create note');
@@ -159,6 +161,18 @@ export const api = {
       ...data,
       createdAt: new Date(data.created_at).getTime()
     };
+  },
+
+  fetchNotes: async (type: 'task' | 'note' = 'note'): Promise<Note[]> => {
+    const response = await fetch(`${API_URL}/notes?type=${type}`, {
+      headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to fetch notes');
+    const data = await response.json();
+    return data.map((note: any) => ({
+      ...note,
+      createdAt: new Date(note.created_at).getTime()
+    }));
   },
 
   uploadImage: async (file: File): Promise<string> => {
@@ -180,11 +194,11 @@ export const api = {
     return data.url;
   },
 
-  updateNote: async (id: number, content: string): Promise<Note> => {
+  updateNote: async (id: number, content: string, label?: string, sort?: number): Promise<Note> => {
     const response = await fetch(`${API_URL}/notes/${id}`, {
       method: 'PUT',
       headers: getHeaders(),
-      body: JSON.stringify({ content })
+      body: JSON.stringify({ content, label, sort })
     });
     if (!response.ok) throw new Error('Failed to update note');
     const data = await response.json();
