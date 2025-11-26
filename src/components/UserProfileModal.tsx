@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
-import { X, ShieldCheck, Mail, Twitter, ChevronRight, ArrowLeft, Copy, Check } from 'lucide-react';
+import { X, ShieldCheck, Mail, Twitter, ChevronRight, ArrowLeft, Copy, Check, LogOut } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
+import { api } from '../api';
 
 interface UserProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
   username: string | null;
+  onLogout: () => void;
 }
 
-export function UserProfileModal({ isOpen, onClose, username }: UserProfileModalProps) {
+export function UserProfileModal({ isOpen, onClose, username, onLogout }: UserProfileModalProps) {
   const [activeTab, setActiveTab] = useState<'list' | 'totp'>('list');
   const [totpEnabled, setTotpEnabled] = useState(false);
 
@@ -45,14 +47,8 @@ export function UserProfileModal({ isOpen, onClose, username }: UserProfileModal
 
   const checkStatus = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/totp/status`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setTotpEnabled(data.enabled);
-      }
+      const data = await api.getTotpStatus();
+      setTotpEnabled(data.enabled);
     } catch (err) {
       console.error(err);
     }
@@ -60,17 +56,7 @@ export function UserProfileModal({ isOpen, onClose, username }: UserProfileModal
 
   const generateSecret = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/totp/generate`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      
-      if (!response.ok) throw new Error('Failed to generate secret');
-      
-      const data = await response.json();
+      const data = await api.generateTotpSecret();
       setSecret(data.secret);
       setQrUrl(data.url);
     } catch (err) {
@@ -80,20 +66,7 @@ export function UserProfileModal({ isOpen, onClose, username }: UserProfileModal
 
   const handleVerify = async () => {
     try {
-      const authToken = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/totp/verify`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ token }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Verification failed');
-      }
+      await api.verifyTotp(token);
 
       setSuccess(true);
       setTotpEnabled(true);
@@ -202,6 +175,17 @@ export function UserProfileModal({ isOpen, onClose, username }: UserProfileModal
                                 <span className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-500">即将推出</span>
                             </div>
                         </div>
+                    </div>
+
+                    {/* Logout Button */}
+                    <div className="p-4 border-t border-gray-100 mt-auto">
+                        <button
+                            onClick={onLogout}
+                            className="w-full flex items-center justify-center gap-2 p-3 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors font-medium"
+                        >
+                            <LogOut size={18} />
+                            退出登录
+                        </button>
                     </div>
                 </div>
             ) : (

@@ -104,37 +104,43 @@ export const SearchBox: React.FC<SearchBoxProps> = ({ onTaskClick }) => {
         <Search className="absolute left-3 top-2.5 text-gray-400" size={20} />
       </div>
 
-      {isOpen && results.length > 0 && (
+      {isOpen && (
         <div 
           ref={listRef}
           className="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-lg border border-gray-200 max-h-96 overflow-y-auto"
         >
-          {results.map((task, index) => (
-            <div
-              key={task.id}
-              onClick={() => handleSelect(task)}
-              className={`p-3 cursor-pointer border-b border-gray-100 last:border-0 ${
-                index === selectedIndex ? 'bg-blue-50' : 'hover:bg-gray-50'
-              }`}
-            >
-              <div className="font-medium text-gray-800">
-                {task.highlights?.title ? (
-                   <span dangerouslySetInnerHTML={{ __html: formatHighlight(task.highlights.title[0]) }} />
-                ) : (
-                  task.title
+          {results.length > 0 ? (
+            results.map((task, index) => (
+              <div
+                key={task.id}
+                onClick={() => handleSelect(task)}
+                className={`p-3 cursor-pointer border-b border-gray-100 last:border-0 ${
+                  index === selectedIndex ? 'bg-blue-50' : 'hover:bg-gray-50'
+                }`}
+              >
+                <div className="font-medium text-gray-800">
+                  {task.highlights?.title ? (
+                    <span dangerouslySetInnerHTML={{ __html: formatHighlight(task.highlights.title[0]) }} />
+                  ) : (
+                    task.title
+                  )}
+                </div>
+                {(task.highlights?.content || (task.notes && task.notes.length > 0)) && (
+                  <div className="text-sm text-gray-500 truncate mt-1">
+                    {task.highlights?.content ? (
+                        <span dangerouslySetInnerHTML={{ __html: formatHighlight(task.highlights.content[0]) }} />
+                    ) : (
+                        task.notes[0]?.content
+                    )}
+                  </div>
                 )}
               </div>
-              {(task.highlights?.content || (task.notes && task.notes.length > 0)) && (
-                <div className="text-sm text-gray-500 truncate mt-1">
-                   {task.highlights?.content ? (
-                      <span dangerouslySetInnerHTML={{ __html: formatHighlight(task.highlights.content[0]) }} />
-                   ) : (
-                      task.notes[0]?.content
-                   )}
-                </div>
-              )}
+            ))
+          ) : (
+            <div className="p-4 text-center text-gray-500 text-sm">
+              无对应的搜索结果
             </div>
-          ))}
+          )}
         </div>
       )}
     </div>

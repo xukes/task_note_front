@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Note } from '../types';
 import { api } from '../api';
-import { Send, Trash2, Maximize2, Tag, Plus, Edit3, Pin, Save, X } from 'lucide-react';
+import { Send, Trash2, Maximize2, Tag, Plus, Edit3, Pin, Save, X, Search } from 'lucide-react';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import ReactMarkdown from 'react-markdown';
@@ -25,10 +25,29 @@ export function IndependentNotesView({ onOpenNoteEditor }: IndependentNotesViewP
   const [newNoteLabel, setNewNoteLabel] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<Note[] | null>(null);
 
   useEffect(() => {
     loadNotes();
   }, []);
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(async () => {
+      if (searchQuery.trim()) {
+        try {
+          const results = await api.searchNotes(searchQuery);
+          setSearchResults(results);
+        } catch (error) {
+          console.error('Search failed:', error);
+        }
+      } else {
+        setSearchResults(null);
+      }
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery]);
 
   const loadNotes = async () => {
     try {
@@ -58,13 +77,15 @@ export function IndependentNotesView({ onOpenNoteEditor }: IndependentNotesViewP
   }, [notes]);
 
   const filteredNotes = useMemo(() => {
-    if (selectedTags.length === 0) return notes;
-    return notes.filter(note => {
+    let currentNotes = searchResults !== null ? searchResults : notes;
+    
+    if (selectedTags.length === 0) return currentNotes;
+    return currentNotes.filter(note => {
       if (!note.label) return false;
       const noteTags = note.label.split(/[,，]/).map(t => t.trim());
       return selectedTags.some(tag => noteTags.includes(tag));
     });
-  }, [notes, selectedTags]);
+  }, [notes, selectedTags, searchResults]);
 
   const toggleTag = (tag: string) => {
     setSelectedTags(prev => 
@@ -203,6 +224,18 @@ export function IndependentNotesView({ onOpenNoteEditor }: IndependentNotesViewP
             新增笔记
           </button>
 
+          {/* Search Box */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="搜索笔记..."
+              className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all"
+            />
+          </div>
+
           {/* Tag Filter */}
           {allTags.length > 0 && (
             <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-100">
@@ -238,10 +271,21 @@ export function IndependentNotesView({ onOpenNoteEditor }: IndependentNotesViewP
                   : 'border-gray-100 hover:border-blue-300 hover:shadow-md'
               }`}
             >
-              {(note.sort || 0) > 0 && (
-                <Pin size={14} className="absolute top-2 right-2 text-blue-500 fill-blue-500" />
-              )}
-              <h3 className={`font-medium text-sm mb-2 pr-4 ${selectedNoteId === note.id ? 'text-blue-700' : 'text-gray-700'}`}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleTogglePin(note.id, note.sort);
+                }}
+                className={`absolute top-2 right-2 p-1.5 rounded-full transition-all opacity-0 group-hover:opacity-100 z-10 ${
+                  (note.sort || 0) > 0 
+                    ? 'opacity-100 text-blue-500 bg-blue-50 hover:bg-blue-100' 
+                    : 'text-gray-400 hover:text-blue-500 hover:bg-gray-100'
+                }`}
+                title={(note.sort || 0) > 0 ? "取消置顶" : "置顶笔记"}
+              >
+                <Pin size={14} className={(note.sort || 0) > 0 ? "fill-current" : ""} />
+              </button>
+              <h3 className={`font-medium text-sm mb-2 pr-8 ${selectedNoteId === note.id ? 'text-blue-700' : 'text-gray-700'}`}>
                 {getNoteTitle(note.content)}
               </h3>
               <div className="flex items-center justify-between text-xs text-gray-400">

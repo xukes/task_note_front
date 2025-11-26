@@ -10,13 +10,24 @@ const getHeaders = () => {
   };
 };
 
+const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
+  const response = await fetch(url, options);
+  if (response.status === 401) {
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    window.location.reload();
+    throw new Error('Unauthorized');
+  }
+  return response;
+};
+
 export const api = {
   fetchTasks: async (startDate?: number, endDate?: number): Promise<Task[]> => {
     const params = new URLSearchParams();
     if (startDate) params.append('start_date', startDate.toString());
     if (endDate) params.append('end_date', endDate.toString());
 
-    const response = await fetch(`${API_URL}/tasks?${params.toString()}`, {
+    const response = await fetchWithAuth(`${API_URL}/tasks?${params.toString()}`, {
       headers: getHeaders()
     });
     if (!response.ok) throw new Error('Failed to fetch tasks');
@@ -43,7 +54,7 @@ export const api = {
     params.append('start_date', startDate.toString());
     params.append('end_date', endDate.toString());
 
-    const response = await fetch(`${API_URL}/tasks/stats?${params.toString()}`, {
+    const response = await fetchWithAuth(`${API_URL}/tasks/stats?${params.toString()}`, {
       headers: getHeaders()
     });
     if (!response.ok) throw new Error('Failed to fetch task stats');
@@ -56,7 +67,7 @@ export const api = {
   },
 
   createTask: async (task: Omit<Task, 'id' | 'createdAt' | 'notes'>): Promise<Task> => {
-    const response = await fetch(`${API_URL}/tasks`, {
+    const response = await fetchWithAuth(`${API_URL}/tasks`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({
@@ -100,7 +111,7 @@ export const api = {
       delete backendUpdates.sortOrder;
     }
 
-    const response = await fetch(`${API_URL}/tasks/${id}`, {
+    const response = await fetchWithAuth(`${API_URL}/tasks/${id}`, {
       method: 'PUT',
       headers: getHeaders(),
       body: JSON.stringify(backendUpdates)
@@ -119,7 +130,7 @@ export const api = {
   },
 
   toggleTask: async (id: number): Promise<Task> => {
-    const response = await fetch(`${API_URL}/tasks/${id}/toggle`, {
+    const response = await fetchWithAuth(`${API_URL}/tasks/${id}/toggle`, {
       method: 'PATCH',
       headers: getHeaders()
     });
@@ -137,7 +148,7 @@ export const api = {
   },
 
   deleteTask: async (id: number): Promise<void> => {
-    const response = await fetch(`${API_URL}/tasks/${id}`, {
+    const response = await fetchWithAuth(`${API_URL}/tasks/${id}`, {
       method: 'DELETE',
       headers: getHeaders()
     });
@@ -145,7 +156,7 @@ export const api = {
   },
 
   createNote: async (taskId: number, content: string, noteType: 'task' | 'note' = 'task', label: string = ''): Promise<Note> => {
-    const response = await fetch(`${API_URL}/notes`, {
+    const response = await fetchWithAuth(`${API_URL}/notes`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({
@@ -164,7 +175,7 @@ export const api = {
   },
 
   fetchNotes: async (type: 'task' | 'note' = 'note'): Promise<Note[]> => {
-    const response = await fetch(`${API_URL}/notes?type=${type}`, {
+    const response = await fetchWithAuth(`${API_URL}/notes?type=${type}`, {
       headers: getHeaders()
     });
     if (!response.ok) throw new Error('Failed to fetch notes');
@@ -180,7 +191,7 @@ export const api = {
     formData.append('file', file);
 
     const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/upload`, {
+    const response = await fetchWithAuth(`${API_URL}/upload`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -195,7 +206,7 @@ export const api = {
   },
 
   updateNote: async (id: number, content: string, label?: string, sort?: number): Promise<Note> => {
-    const response = await fetch(`${API_URL}/notes/${id}`, {
+    const response = await fetchWithAuth(`${API_URL}/notes/${id}`, {
       method: 'PUT',
       headers: getHeaders(),
       body: JSON.stringify({ content, label, sort })
@@ -209,15 +220,44 @@ export const api = {
   },
 
   deleteNote: async (id: number): Promise<void> => {
-    const response = await fetch(`${API_URL}/notes/${id}`, {
+    const response = await fetchWithAuth(`${API_URL}/notes/${id}`, {
       method: 'DELETE',
       headers: getHeaders()
     });
     if (!response.ok) throw new Error('Failed to delete note');
   },
 
+  getTotpStatus: async (): Promise<{ enabled: boolean }> => {
+    const response = await fetchWithAuth(`${API_URL}/auth/totp/status`, {
+      headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to get TOTP status');
+    return response.json();
+  },
+
+  generateTotpSecret: async (): Promise<{ secret: string; url: string }> => {
+    const response = await fetchWithAuth(`${API_URL}/auth/totp/generate`, {
+      method: 'POST',
+      headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to generate TOTP secret');
+    return response.json();
+  },
+
+  verifyTotp: async (token: string): Promise<void> => {
+    const response = await fetchWithAuth(`${API_URL}/auth/totp/verify`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ token })
+    });
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.error || 'Verification failed');
+    }
+  },
+
   searchTasks: async (query: string): Promise<Task[]> => {
-    const response = await fetch(`${API_URL}/search?q=${encodeURIComponent(query)}`, {
+    const response = await fetchWithAuth(`${API_URL}/search?q=${encodeURIComponent(query)}`, {
       headers: getHeaders()
     });
     if (!response.ok) throw new Error('Failed to search tasks');
@@ -234,6 +274,18 @@ export const api = {
         ...note,
         createdAt: new Date(note.created_at).getTime()
       }))
+    }));
+  },
+
+  searchNotes: async (query: string): Promise<Note[]> => {
+    const response = await fetchWithAuth(`${API_URL}/search/notes?q=${encodeURIComponent(query)}`, {
+      headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to search notes');
+    const data = await response.json();
+    return data.map((note: any) => ({
+      ...note,
+      createdAt: new Date(note.created_at).getTime()
     }));
   }
 };

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, Copy, Check } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
+import { api } from '../api';
 
 interface Bind2FAModalProps {
   isOpen: boolean;
@@ -39,17 +40,11 @@ export function Bind2FAModal({ isOpen, onClose }: Bind2FAModalProps) {
   const checkStatus = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/totp/status`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        if (data.enabled) {
-          setIsBound(true);
-        } else {
-          generateSecret();
-        }
+      const data = await api.getTotpStatus();
+      if (data.enabled) {
+        setIsBound(true);
+      } else {
+        generateSecret();
       }
     } catch (err) {
       console.error(err);
@@ -60,17 +55,7 @@ export function Bind2FAModal({ isOpen, onClose }: Bind2FAModalProps) {
 
   const generateSecret = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/totp/generate`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      
-      if (!response.ok) throw new Error('Failed to generate secret');
-      
-      const data = await response.json();
+      const data = await api.generateTotpSecret();
       setSecret(data.secret);
       setQrUrl(data.url);
     } catch (err) {
@@ -80,20 +65,7 @@ export function Bind2FAModal({ isOpen, onClose }: Bind2FAModalProps) {
 
   const handleVerify = async () => {
     try {
-      const authToken = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/totp/verify`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ token }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Verification failed');
-      }
+      await api.verifyTotp(token);
 
       setSuccess(true);
       setTimeout(() => {

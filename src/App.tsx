@@ -7,7 +7,7 @@ import { Calendar } from './components/Calendar';
 import { SidebarTaskList } from './components/SidebarTaskList';
 import { TaskDetailView } from './components/TaskDetailView'; // 引入新组件
 import { UserProfileModal } from './components/UserProfileModal';
-import { LayoutList, LogOut, User } from 'lucide-react';
+import { LayoutList, User } from 'lucide-react';
 import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, startOfDay, endOfDay } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import { LoginPage } from './components/LoginPage';
@@ -422,7 +422,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8 px-4 relative">
+    <div className="min-h-screen bg-gray-100 px-4 relative">
       {/* 全屏笔记编辑器 */}
       {fullScreenEditor && (
         <div className="fixed inset-0 z-50 bg-gray-100 p-4">
@@ -434,54 +434,46 @@ function App() {
         </div>
       )}
 
-      <div className="max-w-6xl mx-auto mb-6 flex justify-between items-center">
-         <div className="flex items-center gap-4">
-            {/* <div className="flex items-center gap-2">
-                <LayoutList className="text-blue-600" />
-                <h1 className="text-2xl font-bold text-gray-800">TaskNote</h1>
-            </div> */}
-            
-            <div className="flex bg-gray-200 rounded-lg p-1 ml-8">
-              <div className="flex items-center gap-2">
-                
-                <button
-                    onClick={() => setActiveTab('tasks')}
-                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-                        activeTab === 'tasks' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-800'
-                    }`}
-                >
-                    任务
-                </button>
-                </div>
-                        <div className="flex items-center gap-2">
-                <button
-                    onClick={() => setActiveTab('notes')}
-                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-                        activeTab === 'notes' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-800'
-                    }`}
-                >
-                    笔记
-                </button>
-                </div>
-            </div>
-         </div>
-         <div className="flex items-center gap-4">
-            <span className="text-gray-600">你好, {username}</span>
-            <button 
-              onClick={() => setIs2FAModalOpen(true)}
-              className="flex items-center gap-1 text-gray-500 hover:text-blue-600 transition-colors"
-              title="User Profile"
-            >
-              <User size={18} />
-            </button>
-            <button onClick={handleLogout} className="flex items-center gap-1 text-gray-500 hover:text-red-600 transition-colors">
-              <LogOut size={18} />
-              退出
-            </button>
-         </div>
+      <div className="sticky top-0 z-40 bg-gray-100/95 backdrop-blur-sm pt-3 pb-4 mb-2 border-b border-gray-200/50">
+        <div className="max-w-[1600px] mx-auto px-4 flex justify-between items-center">
+          <div className="flex items-center gap-4">
+              <div className="flex bg-gray-100/80 p-1.5 rounded-xl border border-gray-200/50 shadow-inner ml-8">
+                  <button
+                      onClick={() => setActiveTab('tasks')}
+                      className={`px-6 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          activeTab === 'tasks' 
+                              ? 'bg-white text-blue-600 shadow-sm ring-1 ring-black/5' 
+                              : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
+                      }`}
+                  >
+                      任务
+                  </button>
+                  <button
+                      onClick={() => setActiveTab('notes')}
+                      className={`px-6 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          activeTab === 'notes' 
+                              ? 'bg-white text-blue-600 shadow-sm ring-1 ring-black/5' 
+                              : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
+                      }`}
+                  >
+                      笔记
+                  </button>
+              </div>
+          </div>
+          <div className="flex items-center gap-4">
+              <span className="text-gray-600">你好, {username}</span>
+              <button 
+                onClick={() => setIs2FAModalOpen(true)}
+                className="flex items-center gap-1 text-gray-500 hover:text-blue-600 transition-colors"
+                title="User Profile"
+              >
+                <User size={18} />
+              </button>
+          </div>
+        </div>
       </div>
 
-      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
+      <div className="max-w-[1600px] mx-auto px-4 grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
         
         {activeTab === 'tasks' ? (
             <>
@@ -523,6 +515,7 @@ function App() {
         isOpen={is2FAModalOpen} 
         onClose={() => setIs2FAModalOpen(false)}
         username={username}
+        onLogout={handleLogout}
       />
     </div>
   );
